@@ -781,6 +781,7 @@
 
     // ===== 렌더링 함수들 =====
     function drawPlayer() {
+
         ctx.save();
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
