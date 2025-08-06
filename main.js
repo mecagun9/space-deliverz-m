@@ -790,9 +790,9 @@
         ctx.fillRect(player.x, player.y, player.width, player.height);
 
         // 우주선 디테일
-        ctx.fillStyle = '#ffffff';
-        // ctx.fillRect(player.x + player.width * 0.4, player.y + player.height * 0.1,
-           //         player.width * 0.2, player.height * 0.3);
+        //ctx.fillStyle = '#ffffff';
+        //ctx.fillRect(player.x + player.width * 0.4, player.y + player.height * 0.1,
+        //player.width * 0.2, player.height * 0.3);
 
         // 포탑들
         ctx.fillStyle = '#00ff00';
