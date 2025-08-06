@@ -783,8 +783,7 @@
     function drawPlayer() {
 
         ctx.save();
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
+
 
         // 우주선 본체
         ctx.fillStyle = player.color;
