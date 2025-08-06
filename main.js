@@ -781,22 +781,29 @@
 
     // ===== 렌더링 함수들 =====
     function drawPlayer() {
+
+        ctx.save();
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+
         // 우주선 본체
         ctx.fillStyle = player.color;
         ctx.fillRect(player.x, player.y, player.width, player.height);
-        
+
         // 우주선 디테일
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(player.x + player.width * 0.4, player.y + player.height * 0.1, 
+        ctx.fillRect(player.x + player.width * 0.4, player.y + player.height * 0.1,
                     player.width * 0.2, player.height * 0.3);
-        
+
         // 포탑들
         ctx.fillStyle = '#00ff00';
         player.turrets.forEach(turret => {
-            ctx.fillRect(player.x + turret.x + player.width/2 - 3*gameScale, 
-                        player.y + turret.y + player.height/2 - 3*gameScale, 
+            ctx.fillRect(player.x + turret.x + player.width/2 - 3*gameScale,
+                        player.y + turret.y + player.height/2 - 3*gameScale,
                         6*gameScale, 6*gameScale);
         });
+
+        ctx.restore();
     }
 
     function drawBullets() {
@@ -821,21 +828,33 @@
 
     function drawEnemies() {
         enemies.forEach(enemy => {
+            ctx.save();
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+
             ctx.fillStyle = enemy.color;
             ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-            
-            // 체력바
+
+            const barWidth = enemy.width;
+            const barHeight = 4 * gameScale;
+            const barY = enemy.y - barHeight - 2;
+
             if (enemy.hp < enemy.maxHp) {
-                const barWidth = enemy.width;
-                const barHeight = 4 * gameScale;
                 const healthRatio = enemy.hp / enemy.maxHp;
-                
+
                 ctx.fillStyle = '#ff0000';
-                ctx.fillRect(enemy.x, enemy.y - barHeight - 2, barWidth, barHeight);
-                
+                ctx.fillRect(enemy.x, barY, barWidth, barHeight);
+
                 ctx.fillStyle = '#00ff00';
-                ctx.fillRect(enemy.x, enemy.y - barHeight - 2, barWidth * healthRatio, barHeight);
+                ctx.fillRect(enemy.x, barY, barWidth * healthRatio, barHeight);
             }
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `${10 * gameScale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText(enemy.hp, enemy.x + barWidth / 2, barY - 2);
+
+            ctx.restore();
         });
     }
 
