@@ -786,7 +786,7 @@
 
 
         // 우주선 본체
-        ctx.fillStyle = player.color;
+        //ctx.fillStyle = player.color;
         ctx.fillRect(player.x, player.y, player.width, player.height);
 
         // 우주선 디테일
