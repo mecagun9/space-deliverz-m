@@ -962,8 +962,8 @@
         }
 
         // 화면 클리어
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        // ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // 배경 별들 그리기
         drawStars();
