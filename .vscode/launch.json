@@ -8,8 +8,9 @@
             "name": "Launch Chrome",
             "request": "launch",
             "type": "chrome",
-            "url": "file:///D:\git\space-deliverz-m",
-                        "webRoot": "${workspaceFolder}"
+            "url": "file:///D:/git/space-deliverz-m/index.html",
+            "webRoot": "${workspaceFolder}"
+        
         },
 
           
