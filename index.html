@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>스페이스 딜리버리Z</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- 준비 화면 -->
+        <div id="prepScreen">
+            <div class="title">🚀 SPACE DELIVERY Z 🚀</div>
+            
+            <!-- 게임 목표 -->
+            <div style="background: rgba(0, 50, 0, 0.3); border: 1px solid #00aa00; border-radius: 8px; padding: 10px; margin: 10px 0; font-size: 12px; color: #00ff00;">
+                <strong>🎯 게임 목표:</strong> 제한 시간 내에 화물을 안전하게 배송하세요!<br>
+                💰 골드로 임시 업그레이드 | 💎 다이아로 영구 업그레이드
+            </div>
+            
+            <div class="section">
+                <div class="section-title">💼 골드: <span id="prepGold">100</span> | 💎 다이아: <span id="prepDiamonds">0</span></div>
+            </div>
+            
+            <!-- 영구 업그레이드 -->
+            <div class="section">
+                <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <span>🔧 우주선 영구 업그레이드 (다이아)</span>
+                    <button class="btn" id="toggleDiamondUpgradesBtn" onclick="toggleDiamondUpgrades()" style="padding:6px 10px;font-size:12px;">접기</button>
+                </div>
+                <div class="grid" id="diamondUpgrades">
+                    <div class="card" style="background: rgba(0, 100, 150, 0.5); min-height: 70px;">
+                        <div style="font-weight: bold; color: #00ffff; font-size: 12px;">🚀 엔진</div>
+                        <div style="font-size: 9px; color: #ccc;">Lv.<span id="shipSpeedLevel">1</span> | +<span id="speedBonus">0</span>%</div>
+                        <button class="btn" onclick="showDiamondShop('speed')" style="font-size: 10px; padding: 4px 8px; margin: 2px 0;">
+                            상점 열기
+                        </button>
+                    </div>
+                    <div class="card" style="background: rgba(0, 100, 150, 0.5); min-height: 70px;">
+                        <div style="font-weight: bold; color: #00ffff; font-size: 12px;">🎯 포탑</div>
+                        <div style="font-size: 9px; color: #ccc;">Lv.<span id="maxTurretLevel">1</span> | 최대 <span id="maxTurrets">3</span></div>
+                        <button class="btn" onclick="showDiamondShop('turret')" style="font-size: 10px; padding: 4px 8px; margin: 2px 0;">
+                            상점 열기
+                        </button>
+                    </div>
+                    <div class="card" style="background: rgba(0, 100, 150, 0.5); min-height: 70px;">
+                        <div style="font-weight: bold; color: #00ffff; font-size: 12px;">📦 화물</div>
+                        <div style="font-size: 9px; color: #ccc;">Lv.<span id="cargoCapacityLevel">1</span> | +<span id="cargoSlotBonus">0</span>슬롯</div>
+                        <button class="btn" onclick="showDiamondShop('cargo')" style="font-size: 10px; padding: 4px 8px; margin: 2px 0;">
+                            상점 열기
+                        </button>
+                    </div>
+                    <div class="card" style="background: rgba(0, 100, 150, 0.5); min-height: 70px;">
+                        <div style="font-weight: bold; color: #00ffff; font-size: 12px;">🔥 연사</div>
+                        <div style="font-size: 9px; color: #ccc;">Lv.<span id="fireRateLevel">1</span> | +<span id="fireRateBonus">0</span>%</div>
+                        <button class="btn" onclick="showDiamondShop('fireRate')" style="font-size: 10px; padding: 4px 8px; margin: 2px 0;">
+                            상점 열기
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🚀 배송지 선택</div>
+                
+                <!-- 스테이지 미션 정보 -->
+                <div id="stageMissionInfo" style="background: rgba(255, 165, 0, 0.2); border: 1px solid #ffaa00; border-radius: 8px; padding: 12px; margin: 12px 0; display: none; font-size: 12px;">
+                    <!-- 미션 정보가 여기에 표시됩니다 -->
+                </div>
+                
+                <div class="grid">
+                    <div class="card" data-destination="nearby" onclick="selectDestination('nearby')">
+                        <div>🌍 근거리 행성 (알파 센타우리)</div>
+                        <div style="font-size: 9px; color: #0f0;">⏰ 1분 15초 | ⭐ 위험도 낮음</div>
+                        <div style="font-size: 9px; color: #aaa;">보상: 기본</div>
+                    </div>
+                    <div class="card" data-destination="medium" onclick="selectDestination('medium')">
+                        <div>🪐 중거리 행성 (베가)</div>
+                        <div style="font-size: 9px; color: #ff0;">⏰ 1분 30초 | ⭐⭐ 위험도 중간</div>
+                        <div style="font-size: 9px; color: #0f0;">보상: +20%</div>
+                    </div>
+                    <div class="card" data-destination="far" onclick="selectDestination('far')">
+                        <div>🌌 원거리 행성 (시리우스)</div>
+                        <div style="font-size: 9px; color: #f80;">⏰ 2분 | ⭐⭐⭐ 위험도 높음</div>
+                        <div style="font-size: 9px; color: #0f0;">보상: +50%</div>
+                    </div>
+                    <div class="card" data-destination="dangerous" onclick="selectDestination('dangerous')">
+                        <div>⚠️ 위험 지역 (블랙홀 근처)</div>
+                        <div style="font-size: 9px; color: #f00;">⏰ 2분 30초 | ⭐⭐⭐⭐ 매우 위험</div>
+                        <div style="font-size: 9px; color: #0f0;">보상: +100%</div>
+                    </div>
+                    <div class="card" data-destination="asteroid" onclick="selectDestination('asteroid')">
+                        <div>☄️ 소행성 벨트</div>
+                        <div style="font-size: 9px; color: #f80;">⏰ 1분 40초 | ⭐⭐⭐⭐ 매우 위험</div>
+                        <div style="font-size: 9px; color: #0f0;">보상: +80%</div>
+                    </div>
+                    <div class="card" data-destination="nebula" onclick="selectDestination('nebula')">
+                        <div>🌫️ 성운 지대</div>
+                        <div style="font-size: 9px; color: #f60;">⏰ 2분 10초 | ⭐⭐⭐ 위험도 높음</div>
+                        <div style="font-size: 9px; color: #0f0;">보상: +60%</div>
+                    </div>
+                    <div class="card" data-destination="wormhole" onclick="selectDestination('wormhole')">
+                        <div>🌀 웜홀 입구</div>
+                        <div style="font-size: 9px; color: #f00;">⏰ 2분 20초 | ⭐⭐⭐⭐ 매우 위험</div>
+                        <div style="font-size: 9px; color: #0f0;">보상: +120%</div>
+                    </div>
+                    <div class="card" data-destination="blackhole" onclick="selectDestination('blackhole')">
+                        <div>🕳️ 블랙홀 근처</div>
+                        <div style="font-size: 9px; color: #800;">⏰ 3분 | ⭐⭐⭐⭐⭐ 위험도 극한</div>
+                        <div style="font-size: 9px; color: #0f0;">보상: +200%</div>
+                    </div>
+                </div>
+                <div id="destinationInfo" style="background: rgba(0, 100, 0, 0.2); border: 1px solid #00aa00; border-radius: 5px; padding: 8px; margin: 8px 0; display: none; font-size: 11px;">
+                    <strong>선택된 목적지:</strong> <span id="selectedDestName">없음</span><br>
+                    <span id="selectedDestDesc">목적지를 선택해주세요.</span><br>
+                    <span id="selectedDestDetails"></span>
+                    <div id="expectedTimeInfo" style="display: none;">
+                        <!-- 예상 제한시간 정보가 여기에 표시됩니다 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">📦 화물 선택 (최대 <span id="maxCargoDisplay">2</span>개)</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin: 8px 0;">
+                    <div class="cargo-card" data-cargo="military" onclick="selectCargo('military')">
+                        <div>🔫 군사물자</div>
+                        <div style="font-size: 9px; color: #0f0;">공격력 +50%</div>
+                        <div style="font-size: 9px; color: #f66;">적 증가</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +15</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="medical" onclick="selectCargo('medical')">
+                        <div>🏥 의료용품</div>
+                        <div style="font-size: 9px; color: #0f0;">생명력 +1</div>
+                        <div style="font-size: 9px; color: #f66;">속도 -10%</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +10</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="energy" onclick="selectCargo('energy')">
+                        <div>⚡ 에너지셀</div>
+                        <div style="font-size: 9px; color: #0f0;">연사속도 +30%</div>
+                        <div style="font-size: 9px; color: #f66;">폭발위험</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +12</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="luxury" onclick="selectCargo('luxury')">
+                        <div>💎 고급품</div>
+                        <div style="font-size: 9px; color: #0f0;">다이아 +100%</div>
+                        <div style="font-size: 9px; color: #f66;">속도 -20%</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +25</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="tech" onclick="selectCargo('tech')">
+                        <div>🔧 기술부품</div>
+                        <div style="font-size: 9px; color: #0f0;">정확도 +25%</div>
+                        <div style="font-size: 9px; color: #f66;">무게증가</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +18</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="fuel" onclick="selectCargo('fuel')">
+                        <div>⛽ 연료</div>
+                        <div style="font-size: 9px; color: #0f0;">속도 +20%</div>
+                        <div style="font-size: 9px; color: #f66;">화재위험</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +8</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="food" onclick="selectCargo('food')">
+                        <div>🍖 식량</div>
+                        <div style="font-size: 9px; color: #0f0;">골드 보상</div>
+                        <div style="font-size: 9px; color: #aaa;">패널티 없음</div>
+                        <div style="font-size: 9px; color: #ff0;">💰 +20</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="art" onclick="selectCargo('art')">
+                        <div>🎨 예술품</div>
+                        <div style="font-size: 9px; color: #0f0;">다이아 보상</div>
+                        <div style="font-size: 9px; color: #aaa;">패널티 없음</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +15</div>
+                    </div>
+                    <!-- 새로운 특별 화물들 -->
+                    <div class="cargo-card" data-cargo="quantum" onclick="selectCargo('quantum')" style="background: rgba(128, 0, 128, 0.3); border-color: #800080;">
+                        <div>⚛️ 양자물질</div>
+                        <div style="font-size: 9px; color: #0f0;">공격력 +80%</div>
+                        <div style="font-size: 9px; color: #0f0;">연사속도 +50%</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +30</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="plasma" onclick="selectCargo('plasma')" style="background: rgba(255, 0, 255, 0.3); border-color: #ff00ff;">
+                        <div>🔥 플라즈마</div>
+                        <div style="font-size: 9px; color: #0f0;">공격력 +30%</div>
+                        <div style="font-size: 9px; color: #0f0;">속도 +30%</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +22</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="crystal" onclick="selectCargo('crystal')" style="background: rgba(0, 255, 255, 0.3); border-color: #00ffff;">
+                        <div>💎 크리스탈</div>
+                        <div style="font-size: 9px; color: #0f0;">다이아 +200%</div>
+                        <div style="font-size: 9px; color: #aaa;">패널티 없음</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +35</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="nanotech" onclick="selectCargo('nanotech')" style="background: rgba(0, 128, 128, 0.3); border-color: #008080;">
+                        <div>🔬 나노기술</div>
+                        <div style="font-size: 9px; color: #0f0;">정확도 +40%</div>
+                        <div style="font-size: 9px; color: #0f0;">연사속도 +40%</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +28</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="antimatter" onclick="selectCargo('antimatter')" style="background: rgba(255, 128, 0, 0.3); border-color: #ff8000;">
+                        <div>☢️ 반물질</div>
+                        <div style="font-size: 9px; color: #0f0;">공격력 +100%</div>
+                        <div style="font-size: 9px; color: #f66;">속도 -30%</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +40</div>
+                    </div>
+                    <div class="cargo-card" data-cargo="darkmatter" onclick="selectCargo('darkmatter')" style="background: rgba(64, 0, 64, 0.3); border-color: #400040;">
+                        <div>🌌 암흑물질</div>
+                        <div style="font-size: 9px; color: #0f0;">다이아 +300%</div>
+                        <div style="font-size: 9px; color: #f66;">속도 -40%</div>
+                        <div style="font-size: 9px; color: #0ff;">💎 +45</div>
+                    </div>
+                </div>
+                
+                <div class="status-display">
+                    선택된 화물: <span id="selectedCargoCount">0</span>/<span id="maxCargoSlots">2</span>
+                </div>
+            </div>
+            
+            <button class="btn btn-start" id="startBtn" onclick="startGame()" disabled>🚀 미션 시작</button>
+            
+            <div class="mobile-instructions">
+                📱 <strong>모바일 조작법:</strong><br>
+                • 화면을 터치하면 우주선이 그 위치로 이동<br>
+                • 총알은 자동으로 발사됨<br>
+                
+            </div>
+        </div>
+        
+        <!-- 인터미션 화면 -->
+        <div id="intermissionScreen" style="display:none;">
+            <canvas id="intermissionCanvas" width="768" height="260"></canvas>
+            <div id="intermissionInfo" style="margin-top:10px; font-size: 14px; color: #0f0;">
+                화물 적재 중...
+            </div>
+        </div>
+
+        <!-- 다이아 상점 화면 -->
+        <div id="diamondShopScreen" style="display:none;">
+            <canvas id="diamondShopCanvas" width="768" height="1024"></canvas>
+            <div id="diamondShopInfo" style="position: absolute; top: 20px; left: 20px; color: #0f0; font-size: 16px; font-weight: bold;">
+                💎 다이아 상점
+            </div>
+            <div id="diamondShopDetails" style="position: absolute; top: 60px; left: 20px; color: #fff; font-size: 14px; max-width: 400px;">
+                <!-- 상점 상세 정보가 여기에 표시됩니다 -->
+            </div>
+            <div id="diamondShopButtons" style="position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px;">
+                <button class="btn" onclick="confirmPurchase()" style="background: #00aa00; color: white;">구매 확인</button>
+                <button class="btn" onclick="closeDiamondShop()" style="background: #aa0000; color: white;">취소</button>
+            </div>
+            <button class="btn" onclick="closeDiamondShop()" style="position: absolute; top: 20px; right: 20px; background: #333; color: white;">✕</button>
+        </div>
+
+        <!-- 구매 확인 모달 -->
+        <div id="purchaseConfirmModal" class="modal">
+            <h2>💎 구매 확인</h2>
+            <p id="purchaseConfirmText">정말로 구매하시겠습니까?</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn" onclick="executePurchase()" style="background: #00aa00; color: white;">구매</button>
+                <button class="btn" onclick="closePurchaseModal()" style="background: #aa0000; color: white;">취소</button>
+            </div>
+        </div>
+
+        <!-- 게임 화면 -->
+        <div id="gameScreen">
+            <canvas id="gameCanvas" width="768" height="1024"></canvas>
+            <div id="gameInfo">
+                <span>점수: <span id="score">0</span></span>
+                <span>💰 <span id="gold">100</span></span>
+                <span>❤️ <span id="lives">3</span></span>
+                <span>⏰ <span id="timer">120</span>s</span>
+                <span>🎯 포탑: <span id="turretCount">1</span></span>
+            </div>
+            
+            <div id="upgradePanel">
+                <button class="upgrade-btn" onclick="addTurret()">
+                    🎯 포탑 추가<br><span id="turretCost">100골드</span>
+                </button>
+                <button class="upgrade-btn" onclick="upgradeDamage()">
+                    ⚔️ 공격력<br><span id="damageCost">50골드</span>
+                </button>
+                <button class="upgrade-btn" onclick="upgradeSpeed()">
+                    ⚡ 속도<br><span id="speedCost">75골드</span>
+                </button>
+            </div>
+            
+            <button class="btn" onclick="returnToPrep()">🔙 준비화면으로</button>
+        </div>
+        
+        <!-- 게임 오버 모달 -->
+        <div id="gameOverModal" class="modal">
+            <h2>💥 미션 실패!</h2>
+            <p>최종 점수: <span id="finalScore">0</span></p>
+            <button class="btn" onclick="returnToPrep()">재도전</button>
+        </div>
+        
+        <!-- 스테이지 클리어 모달 -->
+        <div id="stageClearModal" class="modal">
+            <h2>🎉 배송 성공!</h2>
+            <p>획득 골드: <span id="rewardGold">0</span></p>
+            <p>💎 획득 다이아: <span id="rewardDiamonds">0</span></p>
+            <button class="btn" onclick="returnToPrep()">다음 배송</button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
