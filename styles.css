@@ -168,6 +168,7 @@ body {
     justify-content: center;
     align-items: center;
     padding: 10px;
+<<<<<<< HEAD
     overflow: hidden;
 }
 
@@ -389,14 +390,19 @@ body {
     0% { box-shadow: 0 0 5px rgba(255, 165, 0, 0.5); }
     50% { box-shadow: 0 0 20px rgba(255, 165, 0, 0.8); }
     100% { box-shadow: 0 0 5px rgba(255, 165, 0, 0.5); }
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
 }
 
 #gameCanvas {
     border: 2px solid #00ffff;
     background: radial-gradient(ellipse at center, #001122 0%, #000000 100%);
     border-radius: 8px;
+<<<<<<< HEAD
     max-width: 100%;
     max-height: 90vh;
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
 }
 
 #gameInfo {
@@ -407,7 +413,10 @@ body {
     flex-wrap: wrap;
     gap: 5px;
     max-width: 100%;
+<<<<<<< HEAD
     padding: 0 10px;
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
 }
 
 #gameInfo span {
@@ -423,7 +432,10 @@ body {
     justify-content: center;
     gap: 8px;
     flex-wrap: wrap;
+<<<<<<< HEAD
     padding: 0 10px;
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
 }
 
 .upgrade-btn {

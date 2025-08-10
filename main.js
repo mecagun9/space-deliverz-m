@@ -6,7 +6,11 @@
         nearby: { 
             name: '🌍 근거리 행성', 
             description: '안전하지만 보상이 적습니다.',
+<<<<<<< HEAD
             time: 75, 
+=======
+            time: 120, 
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
             difficulty: 1, 
             goldMultiplier: 1, 
             diamondMultiplier: 1,
@@ -15,7 +19,11 @@
         medium: { 
             name: '🪐 중거리 행성',
             description: '적당한 위험과 보상입니다.',
+<<<<<<< HEAD
             time: 90, 
+=======
+            time: 150, 
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
             difficulty: 1.5, 
             goldMultiplier: 1.2, 
             diamondMultiplier: 1.2,
@@ -24,7 +32,11 @@
         far: { 
             name: '🌌 원거리 행성',
             description: '위험하지만 보상이 좋습니다.',
+<<<<<<< HEAD
             time: 120, 
+=======
+            time: 180, 
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
             difficulty: 2, 
             goldMultiplier: 1.5, 
             diamondMultiplier: 1.5,
@@ -33,11 +45,16 @@
         dangerous: { 
             name: '⚠️ 위험 지역',
             description: '매우 위험하지만 최고의 보상!',
+<<<<<<< HEAD
             time: 150, 
+=======
+            time: 210, 
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
             difficulty: 3, 
             goldMultiplier: 2, 
             diamondMultiplier: 2,
             details: '⭐⭐⭐⭐ 위험도: 매우 높음 | 적 속도: 극한 | 적 체력: 3-5'
+<<<<<<< HEAD
         },
         // 새로운 목적지들 추가
         asteroid: { 
@@ -75,6 +92,8 @@
             goldMultiplier: 2.2, 
             diamondMultiplier: 2.2,
             details: '⭐⭐⭐⭐ 위험도: 매우 높음 | 적 속도: 극한 | 적 체력: 3-5'
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         }
     };
 
@@ -86,6 +105,7 @@
         tech: { name: '기술 부품', turretAccuracy: 0.25, reward: 18 },
         fuel: { name: '연료', speedBonus: 0.2, reward: 8 },
         food: { name: '식량', effects: {}, reward: 20, goldReward: true },
+<<<<<<< HEAD
         art: { name: '예술품', effects: {}, reward: 15, diamondReward: true },
         // 새로운 화물들 추가
         quantum: { name: '양자 물질', damageBonus: 0.8, fireRateBonus: 0.5, reward: 30 },
@@ -94,6 +114,9 @@
         nanotech: { name: '나노 기술', turretAccuracy: 0.4, fireRateBonus: 0.4, reward: 28 },
         antimatter: { name: '반물질', damageBonus: 1.0, speedPenalty: 0.3, reward: 40 },
         darkmatter: { name: '암흑 물질', diamondBonus: 3, speedPenalty: 0.4, reward: 45, diamondReward: true }
+=======
+        art: { name: '예술품', effects: {}, reward: 15, diamondReward: true }
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
     };
 
     // ===== 게임 상태 변수들 =====
@@ -115,7 +138,11 @@
     };
 
     const player = {
+<<<<<<< HEAD
         x: 384, y: 900, width: 40, height: 40, speed: 4, color: '#00ffff', turrets: []
+=======
+        x: 400, y: 500, width: 40, height: 40, speed: 4, color: '#00ffff', turrets: []
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
     };
 
     let bullets = [], turretBullets = [], enemies = [], explosions = [], stars = [], gameLoopRunning = false;
@@ -139,7 +166,11 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+<<<<<<< HEAD
             gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+=======
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
             oscillator.start(audioContext.currentTime);
             oscillator.stop(audioContext.currentTime + duration);
@@ -148,6 +179,7 @@
         }
     }
 
+<<<<<<< HEAD
     // ===== 준비 화면 토글 =====
     function toggleDiamondUpgrades() {
         const section = document.getElementById('diamondUpgrades');
@@ -158,6 +190,8 @@
         btn.textContent = isHidden ? '접기' : '펼치기';
     }
 
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
     function resizeCanvas() {
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
@@ -166,15 +200,26 @@
         
         if (isMobile) {
             canvasWidth = Math.min(windowWidth - 20, 700);
+<<<<<<< HEAD
             canvasHeight = Math.min(windowHeight - 200, 900);
         } else {
             canvasWidth = Math.min(windowWidth - 40, 768);
             canvasHeight = Math.min(windowHeight - 300, 1024);
+=======
+            canvasHeight = Math.min(windowHeight - 200, 500);
+        } else {
+            canvasWidth = Math.min(windowWidth - 40, 800);
+            canvasHeight = Math.min(windowHeight - 300, 600);
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         }
         
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
+<<<<<<< HEAD
         gameScale = canvasWidth / 768;
+=======
+        gameScale = canvasWidth / 800;
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         
         player.width = 40 * gameScale;
         player.height = 40 * gameScale;
@@ -197,6 +242,7 @@
     function getShipSpeedBonus() { return (gameState.shipSpeedLevel - 1) * 15; }
     function getFireRateBonus() { return (gameState.fireRateLevel - 1) * 20; }
 
+<<<<<<< HEAD
     // ===== 다이아 상점 관련 변수들 =====
     let currentShopItem = null;
     let currentShopCost = 0;
@@ -386,6 +432,47 @@
         // 모달과 상점 닫기
         closePurchaseModal();
         closeDiamondShop();
+=======
+    function upgradeShipSpeed() {
+        const cost = 5 + (gameState.shipSpeedLevel - 1) * 3;
+        if (gameState.diamonds >= cost) {
+            gameState.diamonds -= cost;
+            gameState.shipSpeedLevel++;
+            playSound(600, 0.3);
+            updatePrepUI();
+        }
+    }
+
+    function upgradeMaxTurrets() {
+        const cost = 8 + (gameState.maxTurretLevel - 1) * 5;
+        if (gameState.diamonds >= cost) {
+            gameState.diamonds -= cost;
+            gameState.maxTurretLevel++;
+            playSound(600, 0.3);
+            updatePrepUI();
+        }
+    }
+
+    function upgradeCargoCapacity() {
+        const cost = 10 + (gameState.cargoCapacityLevel - 1) * 7;
+        if (gameState.diamonds >= cost) {
+            gameState.diamonds -= cost;
+            gameState.cargoCapacityLevel++;
+            playSound(600, 0.3);
+            updatePrepUI();
+            updateCargoSlotDisplay();
+        }
+    }
+
+    function upgradeFireRate() {
+        const cost = 6 + (gameState.fireRateLevel - 1) * 4;
+        if (gameState.diamonds >= cost) {
+            gameState.diamonds -= cost;
+            gameState.fireRateLevel++;
+            playSound(600, 0.3);
+            updatePrepUI();
+        }
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
     }
 
     // ===== UI 관련 함수들 =====
@@ -402,7 +489,10 @@
         document.getElementById('selectedDestDesc').textContent = dest.description;
         document.getElementById('selectedDestDetails').textContent = dest.details;
         
+<<<<<<< HEAD
         updateExpectedTimeDisplay();
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         updateStartButton();
     }
 
@@ -421,7 +511,10 @@
         }
         
         document.getElementById('selectedCargoCount').textContent = gameState.selectedCargos.length;
+<<<<<<< HEAD
         updateExpectedTimeDisplay();
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         updateStartButton();
     }
 
@@ -449,10 +542,27 @@
         document.getElementById('fireRateLevel').textContent = gameState.fireRateLevel;
         document.getElementById('fireRateBonus').textContent = getFireRateBonus();
         
+<<<<<<< HEAD
         // 선택된 목적지가 있을 때 예상 제한시간 표시
         if (gameState.selectedDestination) {
             updateExpectedTimeDisplay();
         }
+=======
+        const speedCost = 5 + (gameState.shipSpeedLevel - 1) * 3;
+        const turretCost = 8 + (gameState.maxTurretLevel - 1) * 5;
+        const cargoCost = 10 + (gameState.cargoCapacityLevel - 1) * 7;
+        const fireRateCost = 6 + (gameState.fireRateLevel - 1) * 4;
+        
+        document.getElementById('speedUpgradeCost').textContent = speedCost;
+        document.getElementById('turretUpgradeCost').textContent = turretCost;
+        document.getElementById('cargoUpgradeCost').textContent = cargoCost;
+        document.getElementById('fireRateUpgradeCost').textContent = fireRateCost;
+        
+        document.querySelector('[onclick="upgradeShipSpeed()"]').disabled = gameState.diamonds < speedCost;
+        document.querySelector('[onclick="upgradeMaxTurrets()"]').disabled = gameState.diamonds < turretCost;
+        document.querySelector('[onclick="upgradeCargoCapacity()"]').disabled = gameState.diamonds < cargoCost;
+        document.querySelector('[onclick="upgradeFireRate()"]').disabled = gameState.diamonds < fireRateCost;
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
     }
 
     function updateCargoSlotDisplay() {
@@ -462,6 +572,7 @@
         document.getElementById('maxCargoDisplay').textContent = maxSlots;
     }
 
+<<<<<<< HEAD
     // 예상 제한시간 계산 및 표시
     function updateExpectedTimeDisplay() {
         if (!gameState.selectedDestination) return;
@@ -507,6 +618,8 @@
         }
     }
 
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
     function updateUI() {
         document.getElementById('score').textContent = gameState.score;
         document.getElementById('gold').textContent = gameState.gold;
@@ -535,6 +648,7 @@
             return;
         }
         
+<<<<<<< HEAD
         // 인터미션으로 진입
         if (!audioContext) initAudio();
         showIntermissionAndLoad();
@@ -639,6 +753,13 @@
     function startActualGameplay() {
         resizeCanvas();
         initializeGame();
+=======
+        if (!audioContext) initAudio();
+        resizeCanvas();
+        initializeGame();
+        
+        document.getElementById('prepScreen').style.display = 'none';
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         document.getElementById('gameScreen').style.display = 'flex';
         
         gameState.inGame = true;
@@ -654,6 +775,10 @@
 
     function initializeGame() {
         const destination = DESTINATIONS[gameState.selectedDestination];
+<<<<<<< HEAD
+=======
+        gameState.stageTimer = destination.time;
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         
         let speedMultiplier = 1, damageMultiplier = 1, bonusLives = 0, fireRateMultiplier = 1;
         
@@ -670,11 +795,14 @@
         const speedBonus = getShipSpeedBonus() / 100;
         player.speed = baseSpeed * (1 + speedBonus) * speedMultiplier;
         
+<<<<<<< HEAD
         // 우주선 속도에 따라 제한시간 조정
         const totalSpeedMultiplier = (1 + speedBonus) * speedMultiplier;
         const timeReduction = Math.min(0.4, (totalSpeedMultiplier - 1) * 0.3); // 최대 40%까지 시간 단축
         gameState.stageTimer = Math.max(destination.time * 0.6, destination.time * (1 - timeReduction));
         
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         gameState.lives = 3 + bonusLives;
         
         player.turrets = [];
@@ -721,7 +849,11 @@
                 speed: 7 * gameScale,
                 color: '#ffff00'
             });
+<<<<<<< HEAD
             playSound(800, 0.05);
+=======
+            playSound(800, 0.1);
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         }
     }
 
@@ -888,6 +1020,7 @@
         gameState.stageComplete = false;
         gameLoopRunning = false;
         
+<<<<<<< HEAD
         // 스테이지 증가
         gameState.stage++;
         
@@ -895,12 +1028,18 @@
         showStageMission(gameState.stage);
         
         // 기존 선택 초기화
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         gameState.selectedDestination = null;
         gameState.selectedCargos = [];
         gameState.damageLevel = 1;
         gameState.speedLevel = 1;
         gameState.turretCount = 1;
         gameState.score = 0;
+<<<<<<< HEAD
+=======
+        gameState.stage = 1;
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         
         document.querySelectorAll('.card, .cargo-card').forEach(card => {
             card.classList.remove('selected');
@@ -913,8 +1052,11 @@
         
         document.getElementById('prepScreen').style.display = 'block';
         document.getElementById('gameScreen').style.display = 'none';
+<<<<<<< HEAD
         const intermission = document.getElementById('intermissionScreen');
         if (intermission) intermission.style.display = 'none';
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
         document.getElementById('gameOverModal').style.display = 'none';
         document.getElementById('stageClearModal').style.display = 'none';
     }
@@ -969,7 +1111,11 @@
             
             if (checkCollision(bullet, player)) {
                 createExplosion(bullet.x, bullet.y);
+<<<<<<< HEAD
                 playSound(200, 0.1);
+=======
+                playSound(200, 0.2);
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
                 gameState.lives--;
                 if (gameState.lives <= 0) {
                     gameState.gameOver = true;
@@ -998,7 +1144,11 @@
             // 플레이어와 충돌 체크
             if (checkCollision(enemy, player)) {
                 createExplosion(enemy.x + enemy.width/2, enemy.y + enemy.height/2);
+<<<<<<< HEAD
                 playSound(200, 0.1);
+=======
+                playSound(200, 0.2);
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
                 gameState.lives--;
                 if (gameState.lives <= 0) {
                     gameState.gameOver = true;
@@ -1025,7 +1175,11 @@
                         gameState.score += enemy.goldValue;
                         gameState.gold += enemy.goldValue;
                         enemies.splice(enemyIndex, 1);
+<<<<<<< HEAD
                         playSound(300, 0.05);
+=======
+                        playSound(300, 0.15);
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
                     }
                 }
             });
@@ -1043,7 +1197,11 @@
                         gameState.score += enemy.goldValue;
                         gameState.gold += enemy.goldValue;
                         enemies.splice(enemyIndex, 1);
+<<<<<<< HEAD
                         playSound(300, 0.05);
+=======
+                        playSound(300, 0.15);
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
                     }
                 }
             });
@@ -1231,6 +1389,7 @@
         ctx.font = `${12 * gameScale}px Arial`;
         ctx.fillText(`점수: ${gameState.score}`, 10, 25);
         ctx.fillText(`골드: ${gameState.gold}`, 10, 45);
+<<<<<<< HEAD
         ctx.fillStyle = gameState.stageTimer <= 10 ? '#ff0000' : 'white';
         ctx.fillText(`생명: ${gameState.lives}`, 10, 65);
         ctx.fillText(`시간: ${gameState.stageTimer}s`, 10, 85);
@@ -1476,6 +1635,10 @@
                 }
             }
         });
+=======
+        ctx.fillText(`생명: ${gameState.lives}`, 10, 65);
+        ctx.fillText(`시간: ${gameState.stageTimer}s`, 10, 85);
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
     }
 
     // ===== 이벤트 리스너들 =====
@@ -1604,22 +1767,35 @@
         updatePrepUI();
         updateCargoSlotDisplay();
         resizeCanvas();
+<<<<<<< HEAD
         
         // 첫 번째 스테이지 미션 표시
         showStageMission(1);
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
     });
 
     window.startGame = startGame;
     window.selectDestination = selectDestination;
     window.selectCargo = selectCargo;
+<<<<<<< HEAD
     window.showDiamondShop = showDiamondShop;
     window.closeDiamondShop = closeDiamondShop;
     window.confirmPurchase = confirmPurchase;
     window.closePurchaseModal = closePurchaseModal;
     window.executePurchase = executePurchase;
+=======
+    window.upgradeShipSpeed = upgradeShipSpeed;
+    window.upgradeMaxTurrets = upgradeMaxTurrets;
+    window.upgradeCargoCapacity = upgradeCargoCapacity;
+    window.upgradeFireRate = upgradeFireRate;
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
     window.upgradeDamage = upgradeDamage;
     window.upgradeSpeed = upgradeSpeed;
     window.addTurret = addTurret;
     window.returnToPrep = returnToPrep;
+<<<<<<< HEAD
     window.toggleDiamondUpgrades = toggleDiamondUpgrades;
+=======
+>>>>>>> 7a717cc617a0ea831e26ded77cbe8dce91c0fab1
 })();
