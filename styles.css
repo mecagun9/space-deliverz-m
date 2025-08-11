@@ -395,8 +395,15 @@ body {
     border: 2px solid #00ffff;
     background: radial-gradient(ellipse at center, #001122 0%, #000000 100%);
     border-radius: 8px;
-    max-width: 100%;
-    max-height: 90vh;
+}
+
+/* 모바일/좁은 화면에서는 가로를 꽉 채우도록 */
+@media (max-width: 900px) {
+    #gameCanvas {
+        width: 100%;
+        height: auto;
+        max-height: 92vh;
+    }
 }
 
 #gameInfo {
