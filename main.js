@@ -31,6 +31,18 @@
 
     let bullets = [], turretBullets = [], enemies = [], explosions = [], stars = [], gameLoopRunning = false;
     let enemyBullets = [], miniFighters = [];
+
+    // 외부 모듈(enemies.js, formations.js)에서 접근 필요: 전역으로 노출
+    window.gameState = gameState;
+    window.player = player;
+    window.enemies = enemies;
+    window.enemyBullets = enemyBullets;
+    window.bullets = bullets;
+    window.turretBullets = turretBullets;
+    Object.defineProperty(window, 'gameScale', {
+        get() { return gameScale; },
+        set(v) { gameScale = v; }
+    });
     let audioContext;
 
     // ===== 기본 함수들 =====
@@ -93,8 +105,8 @@
             canvasWidth = Math.floor(targetWidth * scale);
             canvasHeight = Math.floor(targetHeight * scale);
         } else {
-            // PC: 목표 폭 768을 유지하며, 높이는 뷰포트에 맞춰 축소만
-            scale = Math.min(1, (windowHeight - 160) / targetHeight);
+            // PC: 목표 폭 768을 유지하며, 높이는 뷰포트에 맞춰 축소만 (최소 스케일 가드)
+            scale = Math.max(0.5, Math.min(1, (windowHeight - 160) / targetHeight));
             canvasWidth = Math.floor(targetWidth * scale);
             canvasHeight = Math.floor(targetHeight * scale);
         }
@@ -102,6 +114,9 @@
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
         gameScale = scale;
+        // 전역 참조 사용 시 즉시 반영
+        // (getter/setter로 이미 반영되지만 안정성 차원에서 값 확인용)
+        window.gameScale = gameScale;
 
         player.width = 40 * gameScale;
         player.height = 40 * gameScale;
@@ -1110,7 +1125,7 @@
                     gameState.gameOver = true;
                     showGameOver();
                 }
-                return false;
+                return false; // 충돌한 개체만 제거
             }
             
             return enemy.x > -100 && enemy.x < canvas.width + 100 && 
