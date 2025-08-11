@@ -111,7 +111,8 @@
         score: 0, gold: 100, diamonds: 0, lives: 3, stage: 1, inGame: false, gameOver: false,
         stageComplete: false, stageTimer: 120, lastTimerUpdate: 0, keys: {}, lastEnemySpawn: 0,
         damageLevel: 1, speedLevel: 1, turretCount: 1, shipSpeedLevel: 1, maxTurretLevel: 1,
-        cargoCapacityLevel: 1, fireRateLevel: 1, selectedDestination: null, selectedCargos: []
+        cargoCapacityLevel: 1, fireRateLevel: 1, selectedDestination: null, selectedCargos: [],
+        bossSpawned: false, currentBoss: null
     };
 
     const player = {
@@ -161,25 +162,41 @@
     function resizeCanvas() {
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
-        
-        let canvasWidth, canvasHeight;
-        
-        if (isMobile) {
-            canvasWidth = Math.min(windowWidth - 20, 700);
-            canvasHeight = Math.min(windowHeight - 200, 900);
+
+        // 목표 해상도 비율(세로형 768x1024)을 유지하면서
+        // 가용 뷰포트에 맞게 최대 크기로 스케일링
+        const targetWidth = 768;
+        const targetHeight = 1024;
+
+        // PC/모바일 레이아웃 별 여백/스케일 전략 분리
+        let scale;
+        let canvasWidth;
+        let canvasHeight;
+
+        if (isMobile || windowWidth <= 900) {
+            // 모바일: 가로를 꽉 채우되, 세로 여유를 조금 남김
+            const horizontalPadding = 12;
+            const verticalReserve = 140; // 하단 정보 등
+            const scaleX = (windowWidth - horizontalPadding) / targetWidth;
+            const scaleY = (windowHeight - verticalReserve) / targetHeight;
+            scale = Math.max(0.5, Math.min(scaleX, scaleY));
+            canvasWidth = Math.floor(targetWidth * scale);
+            canvasHeight = Math.floor(targetHeight * scale);
         } else {
-            canvasWidth = Math.min(windowWidth - 40, 768);
-            canvasHeight = Math.min(windowHeight - 300, 1024);
+            // PC: 목표 폭 768을 유지하며, 높이는 뷰포트에 맞춰 축소만
+            scale = Math.min(1, (windowHeight - 160) / targetHeight);
+            canvasWidth = Math.floor(targetWidth * scale);
+            canvasHeight = Math.floor(targetHeight * scale);
         }
-        
+
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
-        gameScale = canvasWidth / 768;
-        
+        gameScale = scale;
+
         player.width = 40 * gameScale;
         player.height = 40 * gameScale;
         player.speed = 4 * gameScale;
-        
+
         player.x = canvasWidth / 2 - player.width / 2;
         player.y = canvasHeight - player.height - 50;
     }
@@ -546,13 +563,26 @@
         const inter = document.getElementById('intermissionScreen');
         const interCanvas = document.getElementById('intermissionCanvas');
         const ictx = interCanvas.getContext('2d');
+        // 인터미션 캔버스 리사이즈
+        resizeIntermissionCanvas();
+        const interScale = interCanvas.width / 768; // 기준 폭 대비 스케일
         
         prep.style.display = 'none';
         inter.style.display = 'flex';
         
         const totalBoxes = gameState.selectedCargos.length;
-        const ship = { x: 40, y: interCanvas.height - 80, w: 120, h: 40 };
-        const bay = { x: ship.x + ship.w - 20, y: ship.y - 10, w: 30, h: 30 };
+        const ship = { 
+            x: 40 * interScale, 
+            y: interCanvas.height - 80 * interScale, 
+            w: 120 * interScale, 
+            h: 40 * interScale 
+        };
+        const bay = { 
+            x: ship.x + ship.w - 20 * interScale, 
+            y: ship.y - 10 * interScale, 
+            w: 30 * interScale, 
+            h: 30 * interScale 
+        };
         
         let loaded = 0;
         let lastTime = 0;
@@ -562,7 +592,7 @@
             ictx.clearRect(0, 0, interCanvas.width, interCanvas.height);
             // 바닥 라인
             ictx.fillStyle = '#331100';
-            ictx.fillRect(0, ship.y + ship.h, interCanvas.width, 4);
+            ictx.fillRect(0, ship.y + ship.h, interCanvas.width, 4 * interScale);
             // 우주선
             ictx.fillStyle = '#00cccc';
             ictx.fillRect(ship.x, ship.y, ship.w, ship.h);
@@ -571,22 +601,22 @@
             ictx.fillRect(bay.x, bay.y, bay.w, bay.h);
             // 텍스트
             ictx.fillStyle = '#ffaa00';
-            ictx.font = '16px Arial';
-            ictx.fillText(`적재 ${loaded}/${totalBoxes}`, 20, 30);
+            ictx.font = `${Math.round(16 * interScale)}px Arial`;
+            ictx.fillText(`적재 ${loaded}/${totalBoxes}`, 20 * interScale, 30 * interScale);
         }
         
         function drawBox(x, y, color) {
             ictx.fillStyle = color;
-            ictx.fillRect(x, y, 24, 24);
+            ictx.fillRect(x, y, 24 * interScale, 24 * interScale);
             ictx.strokeStyle = '#000';
-            ictx.strokeRect(x, y, 24, 24);
+            ictx.strokeRect(x, y, 24 * interScale, 24 * interScale);
         }
         
         function animateBoxLoad(index) {
-            const startX = interCanvas.width - 80;
-            const startY = ship.y - 10;
-            const endX = bay.x + 4 + (index % 2) * 10;
-            const endY = bay.y + 4 + Math.floor(index / 2) * 10;
+            const startX = interCanvas.width - 80 * interScale;
+            const startY = ship.y - 10 * interScale;
+            const endX = bay.x + 4 * interScale + (index % 2) * 10 * interScale;
+            const endY = bay.y + 4 * interScale + Math.floor(index / 2) * 10 * interScale;
             const color = ['#ffaa00','#aaff00','#00ffaa','#00aaff','#aa00ff','#ff00aa','#ff6600','#66ff00'][index % 8];
             const duration = 600; // ms
             let t0;
@@ -599,8 +629,8 @@
                 drawBackground();
                 // 이미 적재된 박스 그리기
                 for (let i = 0; i < loaded; i++) {
-                    const ix = bay.x + 4 + (i % 2) * 10;
-                    const iy = bay.y + 4 + Math.floor(i / 2) * 10;
+                    const ix = bay.x + 4 * interScale + (i % 2) * 10 * interScale;
+                    const iy = bay.y + 4 * interScale + Math.floor(i / 2) * 10 * interScale;
                     drawBox(ix, iy, ['#ffaa00','#aaff00','#00ffaa','#00aaff','#aa00ff','#ff00aa','#ff6600','#66ff00'][i % 8]);
                 }
                 // 이동 중 박스
@@ -634,6 +664,37 @@
                 startActualGameplay();
             }, 300);
         }
+    }
+
+    // 인터미션 캔버스 리사이즈 함수
+    function resizeIntermissionCanvas() {
+        const interCanvas = document.getElementById('intermissionCanvas');
+        if (!interCanvas) return;
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+
+        const targetWidth = 768;
+        const targetHeight = 260;
+
+        let scale;
+        let width;
+        let height;
+
+        if (isMobile || windowWidth <= 900) {
+            const horizontalPadding = 12;
+            const verticalReserve = 160; // 텍스트 라인 등 약간 더 여유
+            const scaleX = (windowWidth - horizontalPadding) / targetWidth;
+            const scaleY = (windowHeight - verticalReserve) / targetHeight;
+            scale = Math.max(0.5, Math.min(scaleX, scaleY));
+        } else {
+            scale = Math.min(1, (windowHeight - 400) / targetHeight);
+        }
+
+        width = Math.floor(targetWidth * scale);
+        height = Math.floor(targetHeight * scale);
+
+        interCanvas.width = width;
+        interCanvas.height = height;
     }
 
     function startActualGameplay() {
@@ -677,6 +738,10 @@
         
         gameState.lives = 3 + bonusLives;
         
+        // 보스 상태 초기화
+        gameState.bossSpawned = false;
+        gameState.currentBoss = null;
+        
         player.turrets = [];
         const positions = [
             { x: 0, y: -15 }, { x: -20, y: -10 }, { x: 20, y: -10 }, { x: -30, y: 0 },
@@ -713,14 +778,18 @@
 
     function shoot() {
         if (!gameState.gameOver && !gameState.stageComplete) {
-            bullets.push({
-                x: player.x + player.width / 2,
-                y: player.y,
-                width: 4 * gameScale,
-                height: 10 * gameScale,
-                speed: 7 * gameScale,
-                color: '#ffff00'
-            });
+            // 공용 총알 함수 사용
+            const bullet = createBullet(
+                player.x + player.width / 2,
+                player.y,
+                4 * gameScale,
+                10 * gameScale,
+                0, // vx (플레이어 총알은 위로만 이동)
+                -7 * gameScale, // vy (위로 이동)
+                'player',
+                '#ffff00'
+            );
+            bullets.push(bullet);
             playSound(800, 0.05);
         }
     }
@@ -729,10 +798,26 @@
     function spawnEnemy() {
         const now = Date.now();
         const destination = DESTINATIONS[gameState.selectedDestination];
-        let spawnRate = 1000 / destination.difficulty;
+        
+        // 제한시간 기반 난이도: 남은 시간이 적을수록 적 스폰 속도 증가
+        const timePressure = Math.max(0, (120 - gameState.stageTimer) / 120); // 0~1 사이 값
+        const timeMultiplier = 1 + timePressure * 2; // 최대 3배까지 스폰 속도 증가
+        
+        // 적 발생수를 80%로 줄임 (스폰 속도를 1.5625배로 증가)
+        let spawnRate = (1000 / destination.difficulty) * 1.5625 / timeMultiplier;
         
         if (gameState.selectedCargos.includes('military')) {
             spawnRate /= 1.3;
+        }
+        
+        // 스테이지별 보스 스폰 체크
+        if (gameState.stage >= 2 && !gameState.bossSpawned) {
+            const bossSpawnChance = 0.001; // 0.1% 확률로 보스 스폰
+            if (Math.random() < bossSpawnChance) {
+                spawnBoss();
+                gameState.bossSpawned = true;
+                return;
+            }
         }
         
         if (now - gameState.lastEnemySpawn > spawnRate - gameState.stage * 100) {
@@ -765,32 +850,143 @@
         const baseSize = 25 * gameScale;
         const baseSpeed = gameScale;
         
-        if (enemyType < 0.6) {
+        // 적의 색깔에 따라 AI 타입 고정
+        if (enemyType < 0.2) {
+            // 1. 자폭형 적: 플레이어를 향해 날아와서 충돌 시 자폭 (스폰 확률 절반으로 감소)
             enemy = {
-                x: enemyX, y: enemyY, width: baseSize, height: baseSize,
-                speed: (Math.random() * 1.5 + 1 + gameState.stage * 0.2) * baseSpeed * destination.difficulty,
-                color: '#ff6600', type: 'normal', hp: 1, maxHp: 1,
-                goldValue: 5 + gameState.stage
+                x: enemyX, y: enemyY, width: baseSize * 0.9, height: baseSize * 0.9,
+                speed: (Math.random() * 1.2 + 1.5 + gameState.stage * 0.25) * baseSpeed * destination.difficulty * 0.5, // 속도 절반으로 감소
+                color: '#ff3300', type: 'kamikaze', hp: 1, maxHp: 1,
+                goldValue: 8 + gameState.stage,
+                aiType: 'kamikaze',
+                targetX: 0, targetY: 0, // 플레이어 위치를 추적
+                lastUpdate: Date.now()
             };
-        } else if (enemyType < 0.85) {
+        } else if (enemyType < 0.4) {
+            // 2. 부술 수 없는 총알 발사형 적: 일정 거리에서 멈춰서 2초마다 총알 발사
+            enemy = {
+                x: enemyX, y: enemyY, width: baseSize * 1.1, height: baseSize * 1.1,
+                speed: (Math.random() * 1.0 + 1.2 + gameState.stage * 0.2) * baseSpeed * destination.difficulty * 0.5, // 속도 절반으로 감소
+                color: '#cc0066', type: 'shooter_indestructible', 
+                hp: Math.ceil((2 + Math.floor(gameState.stage / 3)) * destination.difficulty),
+                maxHp: Math.ceil((2 + Math.floor(gameState.stage / 3)) * destination.difficulty),
+                goldValue: 15 + gameState.stage * 2,
+                aiType: 'shooter_indestructible',
+                targetX: 0, targetY: 0,
+                lastShot: 0,
+                shotInterval: 2000, // 2초마다 발사
+                stopDistance: 150 * gameScale, // 이 거리에서 멈춤
+                hasStopped: false,
+                lastUpdate: Date.now()
+            };
+        } else if (enemyType < 0.6) {
+            // 3. 부술 수 있는 총알 발사형 적: 일정 거리에서 멈춰서 1초마다 총알 발사, 3초 후 맵 밖으로 나감
+            enemy = {
+                x: enemyX, y: enemyY, width: baseSize * 1.0, height: baseSize * 1.0,
+                speed: (Math.random() * 1.1 + 1.3 + gameState.stage * 0.22) * baseSpeed * destination.difficulty * 0.5, // 속도 절반으로 감소
+                color: '#9933ff', type: 'shooter_destructible', 
+                hp: Math.ceil((1 + Math.floor(gameState.stage / 4)) * destination.difficulty),
+                maxHp: Math.ceil((1 + Math.floor(gameState.stage / 4)) * destination.difficulty),
+                goldValue: 12 + gameState.stage * 1.5,
+                aiType: 'shooter_destructible',
+                targetX: 0, targetY: 0,
+                lastShot: 0,
+                shotInterval: 1000, // 1초마다 발사
+                stopDistance: 180 * gameScale, // 이 거리에서 멈춤
+                hasStopped: false,
+                stopTime: 0, // 멈춘 시간
+                maxStopTime: 3000, // 최대 3초 동안 멈춤
+                exitSpeed: 2 * baseSpeed, // 맵 밖으로 나가는 속도
+                lastUpdate: Date.now()
+            };
+        } else if (enemyType < 0.8) {
+            // 기존: 빠른 적
+            enemy = {
+                x: enemyX, y: enemyY, width: baseSize * 0.8, height: baseSize * 0.8,
+                speed: (Math.random() * 2 + 2 + gameState.stage * 0.3) * baseSpeed * destination.difficulty * 0.5, // 속도 절반으로 감소
+                color: '#ff00ff', type: 'fast', hp: 1, maxHp: 1,
+                goldValue: 8 + gameState.stage,
+                aiType: 'chase'
+            };
+        } else {
+            // 기존: 강한 적
             enemy = {
                 x: enemyX, y: enemyY, width: baseSize * 1.2, height: baseSize * 1.2,
-                speed: (Math.random() * 1.2 + 0.8 + gameState.stage * 0.15) * baseSpeed * destination.difficulty,
+                speed: (Math.random() * 1.2 + 0.8 + gameState.stage * 0.15) * baseSpeed * destination.difficulty * 0.5, // 속도 절반으로 감소
                 color: '#ff0000', type: 'strong', 
                 hp: Math.ceil((2 + Math.floor(gameState.stage / 3)) * destination.difficulty),
                 maxHp: Math.ceil((2 + Math.floor(gameState.stage / 3)) * destination.difficulty),
-                goldValue: 12 + gameState.stage * 2
-            };
-        } else {
-            enemy = {
-                x: enemyX, y: enemyY, width: baseSize * 0.8, height: baseSize * 0.8,
-                speed: (Math.random() * 2 + 2 + gameState.stage * 0.3) * baseSpeed * destination.difficulty,
-                color: '#ff00ff', type: 'fast', hp: 1, maxHp: 1,
-                goldValue: 8 + gameState.stage
+                goldValue: 12 + gameState.stage * 2,
+                aiType: 'chase'
             };
         }
         
         enemies.push(enemy);
+    }
+
+    // ===== 보스 적 생성 함수들 =====
+    function spawnBoss() {
+        if (gameState.stage === 2) {
+            spawnCruiserBoss();
+        } else if (gameState.stage >= 3) {
+            spawnCarrierBoss();
+        }
+    }
+
+    // 2스테이지 보스: 중순양함
+    function spawnCruiserBoss() {
+        const boss = {
+            x: canvas.width / 2 - 60 * gameScale,
+            y: -80 * gameScale,
+            width: 120 * gameScale,
+            height: 60 * gameScale,
+            speed: 0.5 * gameScale,
+            color: '#8B0000', // 진한 빨간색
+            type: 'cruiser_boss',
+            hp: 50 + gameState.stage * 10,
+            maxHp: 50 + gameState.stage * 10,
+            goldValue: 100 + gameState.stage * 20,
+            lastShot: 0,
+            shotInterval: 2000, // 2초마다 발사
+            phase: 1, // 보스 페이즈
+            movePattern: 'horizontal', // 좌우 이동 패턴
+            moveDirection: 1,
+            moveRange: 200 * gameScale
+        };
+        
+        enemies.push(boss);
+        gameState.currentBoss = boss;
+        
+        // 보스 등장 효과음
+        playSound(200, 0.3);
+    }
+
+    // 3스테이지 이상 보스: 항공모함
+    function spawnCarrierBoss() {
+        const boss = {
+            x: canvas.width / 2 - 80 * gameScale,
+            y: -100 * gameScale,
+            width: 160 * gameScale,
+            height: 80 * gameScale,
+            speed: 0.3 * gameScale,
+            color: '#4B0082', // 진한 보라색
+            type: 'carrier_boss',
+            hp: 80 + gameState.stage * 15,
+            maxHp: 80 + gameState.stage * 15,
+            goldValue: 150 + gameState.stage * 25,
+            lastShot: 0,
+            shotInterval: 1500, // 1.5초마다 비행기 생성
+            phase: 1,
+            movePattern: 'stationary', // 고정 위치
+            fighterSpawnCount: 0,
+            maxFighters: 5 + gameState.stage * 2
+        };
+        
+        enemies.push(boss);
+        gameState.currentBoss = boss;
+        
+        // 보스 등장 효과음
+        playSound(150, 0.4);
     }
 
     function createExplosion(x, y) {
@@ -902,6 +1098,10 @@
         gameState.turretCount = 1;
         gameState.score = 0;
         
+        // 보스 상태 초기화
+        gameState.bossSpawned = false;
+        gameState.currentBoss = null;
+        
         document.querySelectorAll('.card, .cargo-card').forEach(card => {
             card.classList.remove('selected');
         });
@@ -952,7 +1152,7 @@
 
     function updateBullets() {
         bullets = bullets.filter(bullet => {
-            bullet.y -= bullet.speed;
+            bullet.y += bullet.vy; // speed 대신 vy 사용
             return bullet.y > -bullet.height;
         });
         
@@ -985,14 +1185,26 @@
 
     function updateEnemies() {
         enemies = enemies.filter(enemy => {
-            // 플레이어를 향해 이동
-            const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
-            const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance > 0) {
-                enemy.x += (dx / distance) * enemy.speed;
-                enemy.y += (dy / distance) * enemy.speed;
+            // 보스 적 특별 처리
+            if (enemy.type === 'cruiser_boss') {
+                updateCruiserBoss(enemy);
+            } else if (enemy.type === 'carrier_boss') {
+                updateCarrierBoss(enemy);
+            } else {
+                // 적의 색깔에 따라 AI 타입 결정
+                if (enemy.color === '#ff3300') {
+                    // 자폭형 적 (주황색)
+                    updateKamikazeEnemy(enemy);
+                } else if (enemy.color === '#cc0066') {
+                    // 부술 수 없는 총알 발사형 적 (진한 분홍색)
+                    updateShooterIndestructibleEnemy(enemy);
+                } else if (enemy.color === '#9933ff') {
+                    // 부술 수 있는 총알 발사형 적 (보라색)
+                    updateShooterDestructibleEnemy(enemy);
+                } else {
+                    // 기존 일반 적 처리 (chase AI) - 빨간색, 분홍색
+                    updateChaseEnemy(enemy);
+                }
             }
             
             // 플레이어와 충돌 체크
@@ -1010,6 +1222,262 @@
             return enemy.x > -100 && enemy.x < canvas.width + 100 && 
                    enemy.y > -100 && enemy.y < canvas.height + 100;
         });
+    }
+
+    // ===== 새로운 적 AI 업데이트 함수들 =====
+    
+    // 자폭형 적: 플레이어를 향해 직진
+    function updateKamikazeEnemy(enemy) {
+        const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
+        const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 0) {
+            enemy.x += (dx / distance) * enemy.speed;
+            enemy.y += (dy / distance) * enemy.speed;
+        }
+    }
+    
+    // 부술 수 없는 총알 발사형 적: 일정 거리에서 멈춰서 총알 발사
+    function updateShooterIndestructibleEnemy(enemy) {
+        const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
+        const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (!enemy.hasStopped && distance > enemy.stopDistance) {
+            // 아직 멈추지 않았고, 목표 거리보다 멀면 플레이어를 향해 이동
+            enemy.x += (dx / distance) * enemy.speed;
+            enemy.y += (dy / distance) * enemy.speed;
+        } else if (!enemy.hasStopped && distance <= enemy.stopDistance) {
+            // 목표 거리에 도달하면 멈춤
+            enemy.hasStopped = true;
+        }
+        
+        // 멈춘 상태에서 주기적으로 총알 발사
+        if (enemy.hasStopped) {
+            const now = Date.now();
+            if (now - enemy.lastShot > enemy.shotInterval) {
+                spawnEnemyBullet(enemy, 'indestructible');
+                enemy.lastShot = now;
+            }
+        }
+    }
+    
+    // 부술 수 있는 총알 발사형 적: 일정 거리에서 멈춰서 총알 발사, 3초 후 맵 밖으로 나감
+    function updateShooterDestructibleEnemy(enemy) {
+        const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
+        const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const now = Date.now();
+        
+        if (!enemy.hasStopped && distance > enemy.stopDistance) {
+            // 아직 멈추지 않았고, 목표 거리보다 멀면 플레이어를 향해 이동
+            enemy.x += (dx / distance) * enemy.speed;
+            enemy.y += (dy / distance) * enemy.speed;
+        } else if (!enemy.hasStopped && distance <= enemy.stopDistance) {
+            // 목표 거리에 도달하면 멈춤
+            enemy.hasStopped = true;
+            enemy.stopTime = now;
+        }
+        
+        if (enemy.hasStopped) {
+            // 멈춘 상태에서 주기적으로 총알 발사
+            if (now - enemy.lastShot > enemy.shotInterval) {
+                spawnEnemyBullet(enemy, 'destructible');
+                enemy.lastShot = now;
+            }
+            
+            // 3초 후 맵 밖으로 나감
+            if (now - enemy.stopTime > enemy.maxStopTime) {
+                // 맵 밖으로 나가는 방향 계산
+                const exitDx = (enemy.x < canvas.width / 2) ? -1 : 1;
+                const exitDy = (enemy.y < canvas.height / 2) ? -1 : 1;
+                
+                enemy.x += exitDx * enemy.exitSpeed;
+                enemy.y += exitDy * enemy.exitSpeed;
+            }
+        }
+    }
+    
+    // 기존 추적형 적: 플레이어를 향해 이동
+    function updateChaseEnemy(enemy) {
+        const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
+        const dy = player.y + enemy.height/2 - (enemy.y + enemy.height/2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 0) {
+            enemy.x += (dx / distance) * enemy.speed;
+            enemy.y += (dy / distance) * enemy.speed;
+        }
+    }
+
+    // ===== 공용 총알 함수들 =====
+    function createBullet(x, y, width, height, vx, vy, type, color, damage = 1) {
+        return {
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            vx: vx,
+            vy: vy,
+            type: type,
+            color: color,
+            damage: damage
+        };
+    }
+    
+    function drawBullet(bullet, ctx) {
+        if (bullet.type === 'indestructible') {
+            // 부술 수 없는 총알: 붉은 외곽 + 노란 내부 (항상 동일하게 표시)
+            const outerColor = '#8B0000'; // 매우 붉은색
+            const innerColor = '#FFFF00'; // 노란색
+            const cx = bullet.x + bullet.width / 2;
+            const cy = bullet.y + bullet.height / 2;
+            const rOuter = Math.max(1, bullet.width / 2);
+            const rInner = Math.max(0.5, bullet.width / 3);
+
+            ctx.fillStyle = outerColor;
+            ctx.beginPath();
+            ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = innerColor;
+            ctx.beginPath();
+            ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (bullet.type === 'destructible') {
+            // 부술 수 있는 총알: 적의 색깔과 동일하게 표시
+            ctx.fillStyle = bullet.color || '#9933ff';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        } else if (bullet.type === 'player') {
+            // 플레이어 총알: 노란색
+            ctx.fillStyle = '#ffff00';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        } else if (bullet.type === 'turret') {
+            // 포탑 총알: 초록색
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        } else {
+            // 기본 총알: 빨간색
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        }
+    }
+    
+    function spawnEnemyBullet(enemy, bulletType) {
+        const bulletSize = 4 * gameScale;
+        const bulletSpeed = 3 * gameScale;
+        
+        // 플레이어 방향으로 총알 발사
+        const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
+        const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 0) {
+            const vx = (dx / distance) * bulletSpeed;
+            const vy = (dy / distance) * bulletSpeed;
+            
+            // 공용 총알 함수 사용
+            const bullet = createBullet(
+                enemy.x + enemy.width/2 - bulletSize/2,
+                enemy.y + enemy.height/2 - bulletSize/2,
+                bulletSize,
+                bulletSize,
+                vx,
+                vy,
+                bulletType,
+                enemy.color // 적의 색깔을 사용하여 총알 색깔 결정
+            );
+            
+            enemyBullets.push(bullet);
+            
+            // 총알 발사 효과음
+            playSound(300, 0.1);
+        }
+    }
+
+    // ===== 보스 적 업데이트 함수들 =====
+    function updateCruiserBoss(boss) {
+        const now = Date.now();
+        
+        // 좌우 이동 패턴
+        if (boss.movePattern === 'horizontal') {
+            const centerX = canvas.width / 2;
+            const targetX = centerX + Math.sin(now * 0.001) * boss.moveRange;
+            boss.x = targetX - boss.width / 2;
+        }
+        
+        // 플레이어를 향해 천천히 하강
+        if (boss.y < 100 * gameScale) {
+            boss.y += boss.speed;
+        }
+        
+        // 주기적으로 총알 발사
+        if (now - boss.lastShot > boss.shotInterval) {
+            spawnBossBullet(boss, 'cruiser');
+            boss.lastShot = now;
+        }
+    }
+
+    function updateCarrierBoss(boss) {
+        const now = Date.now();
+        
+        // 고정 위치에서 천천히 하강
+        if (boss.y < 120 * gameScale) {
+            boss.y += boss.speed;
+        }
+        
+        // 주기적으로 전투기 생성
+        if (now - boss.lastShot > boss.shotInterval && boss.fighterSpawnCount < boss.maxFighters) {
+            spawnFighterFromCarrier(boss);
+            boss.lastShot = now;
+            boss.fighterSpawnCount++;
+        }
+    }
+
+    // 보스 총알 생성
+    function spawnBossBullet(boss, bossType) {
+        if (bossType === 'cruiser') {
+            const bulletSpeed = 3 * gameScale;
+            const dx = player.x + player.width/2 - (boss.x + boss.width/2);
+            const dy = player.y + player.height/2 - (boss.y + boss.height/2);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 0) {
+                // 공용 총알 함수 사용
+                const bullet = createBullet(
+                    boss.x + boss.width/2,
+                    boss.y + boss.height,
+                    6 * gameScale,
+                    6 * gameScale,
+                    (dx / distance) * bulletSpeed,
+                    (dy / distance) * bulletSpeed,
+                    'enemy', // 기본 적 총알 타입
+                    '#ff0000', // 빨간색
+                    2
+                );
+                enemyBullets.push(bullet);
+            }
+        }
+    }
+
+    // 항공모함에서 전투기 생성
+    function spawnFighterFromCarrier(carrier) {
+        const fighter = {
+            x: carrier.x + Math.random() * carrier.width,
+            y: carrier.y + carrier.height,
+            width: 20 * gameScale,
+            height: 20 * gameScale,
+            speed: (Math.random() * 1 + 2) * gameScale,
+            color: '#FF4500', // 주황색
+            type: 'carrier_fighter',
+            hp: 3,
+            maxHp: 3,
+            goldValue: 15 + gameState.stage * 3
+        };
+        
+        enemies.push(fighter);
+        playSound(500, 0.1);
     }
 
     function checkBulletCollisions() {
@@ -1048,15 +1516,51 @@
                 }
             });
         });
+
+        // 플레이어 총알과 적 총알의 충돌 (부술 수 있는 총알만)
+        bullets.forEach((bullet, bulletIndex) => {
+            enemyBullets.forEach((enemyBullet, enemyBulletIndex) => {
+                if (enemyBullet.type === 'destructible' && checkCollision(bullet, enemyBullet)) {
+                    // 부술 수 있는 총알과 충돌 시 양쪽 총알 모두 제거
+                    bullets.splice(bulletIndex, 1);
+                    enemyBullets.splice(enemyBulletIndex, 1);
+                    
+                    // 작은 폭발 효과
+                    createExplosion(bullet.x + bullet.width/2, bullet.y + bullet.height/2);
+                    playSound(400, 0.1);
+                }
+            });
+        });
+
+        // 포탑 총알과 적 총알의 충돌 (부술 수 있는 총알만)
+        turretBullets.forEach((bullet, bulletIndex) => {
+            enemyBullets.forEach((enemyBullet, enemyBulletIndex) => {
+                if (enemyBullet.type === 'destructible' && checkCollision(bullet, enemyBullet)) {
+                    // 부술 수 있는 총알과 충돌 시 양쪽 총알 모두 제거
+                    turretBullets.splice(bulletIndex, 1);
+                    enemyBullets.splice(enemyBulletIndex, 1);
+                    
+                    // 작은 폭발 효과
+                    createExplosion(bullet.x + bullet.width/2, bullet.y + bullet.height/2);
+                    playSound(400, 0.1);
+                }
+            });
+        });
     }
 
     function updateTurrets() {
         const now = Date.now();
         const fireRateBonus = getFireRateBonus();
-        const baseInterval = 250 / (1 + fireRateBonus / 100);
+        // 터렛 발사 빈도를 절반으로 줄임 (250 -> 500)
+        const baseInterval = 500 / (1 + fireRateBonus / 100);
+        
+        // 일반형 적의 발생 빈도에 비례해서 터렛 발사 빈도 조정
+        const enemyCount = enemies.length;
+        const enemyDensity = Math.min(enemyCount / 10, 2); // 적 밀도 (최대 2배)
+        const adjustedInterval = baseInterval / enemyDensity;
         
         player.turrets.forEach(turret => {
-            if (now - turret.lastShot > baseInterval && enemies.length > 0) {
+            if (now - turret.lastShot > adjustedInterval && enemies.length > 0) {
                 // 가장 가까운 적 찾기
                 let closestEnemy = null;
                 let closestDistance = Infinity;
@@ -1081,16 +1585,19 @@
                     const vx = (dx / distance) * bulletSpeed;
                     const vy = (dy / distance) * bulletSpeed;
                     
-                    turretBullets.push({
-                        x: player.x + turret.x + player.width/2,
-                        y: player.y + turret.y + player.height/2,
-                        width: 3 * gameScale,
-                        height: 3 * gameScale,
-                        vx: vx,
-                        vy: vy,
-                        damage: turret.damage,
-                        color: '#00ff00'
-                    });
+                    // 공용 총알 함수 사용
+                    const bullet = createBullet(
+                        player.x + turret.x + player.width/2,
+                        player.y + turret.y + player.height/2,
+                        3 * gameScale,
+                        3 * gameScale,
+                        vx,
+                        vy,
+                        'turret',
+                        '#00ff00',
+                        turret.damage
+                    );
+                    turretBullets.push(bullet);
                     
                     turret.lastShot = now;
                     playSound(600, 0.08);
@@ -1153,26 +1660,38 @@
                         6*gameScale, 6*gameScale);
         });
 
+        // 터렛 사정거리 경계선을 원으로 표시
+        ctx.strokeStyle = 'rgba(0, 255, 0, 0.3)';
+        ctx.lineWidth = 2 * gameScale;
+        ctx.setLineDash([5 * gameScale, 5 * gameScale]);
+        player.turrets.forEach(turret => {
+            ctx.beginPath();
+            ctx.arc(player.x + turret.x + player.width/2, 
+                   player.y + turret.y + player.height/2, 
+                   300 * gameScale, 0, Math.PI * 2);
+            ctx.stroke();
+        });
+        ctx.setLineDash([]); // 점선 해제
+
         ctx.restore();
     }
 
     function drawBullets() {
         // 플레이어 총알
-        ctx.fillStyle = '#ffff00';
         bullets.forEach(bullet => {
-            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            bullet.type = 'player'; // 타입 설정
+            drawBullet(bullet, ctx);
         });
         
         // 포탑 총알
-        ctx.fillStyle = '#00ff00';
         turretBullets.forEach(bullet => {
-            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            bullet.type = 'turret'; // 타입 설정
+            drawBullet(bullet, ctx);
         });
         
-        // 적 총알
-        ctx.fillStyle = '#ff0000';
+        // 적 총알 (공용 총알 함수 사용)
         enemyBullets.forEach(bullet => {
-            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            drawBullet(bullet, ctx);
         });
     }
 
@@ -1182,9 +1701,18 @@
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
 
-            ctx.fillStyle = enemy.color;
-            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            // 보스 적 특별 그리기
+            if (enemy.type === 'cruiser_boss') {
+                drawCruiserBoss(enemy);
+            } else if (enemy.type === 'carrier_boss') {
+                drawCarrierBoss(enemy);
+            } else {
+                // 일반 적 그리기
+                ctx.fillStyle = enemy.color;
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            }
 
+            // 체력바 그리기
             const barWidth = enemy.width;
             const barHeight = 4 * gameScale;
             const barY = enemy.y - barHeight - 2;
@@ -1206,6 +1734,51 @@
 
             ctx.restore();
         });
+    }
+
+    // ===== 보스 적 그리기 함수들 =====
+    function drawCruiserBoss(boss) {
+        // 중순양함 본체
+        ctx.fillStyle = boss.color;
+        ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+        
+        // 중순양함 디테일
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(boss.x + boss.width * 0.3, boss.y + boss.height * 0.2, boss.width * 0.4, boss.height * 0.3);
+        
+        // 포탑들
+        ctx.fillStyle = '#ffff00';
+        ctx.fillRect(boss.x + boss.width * 0.1, boss.y + boss.height * 0.1, boss.width * 0.15, boss.height * 0.2);
+        ctx.fillRect(boss.x + boss.width * 0.75, boss.y + boss.height * 0.1, boss.width * 0.15, boss.height * 0.2);
+        
+        // 보스 표시
+        ctx.fillStyle = '#ff00ff';
+        ctx.font = `${12 * gameScale}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('BOSS', boss.x + boss.width / 2, boss.y - 10);
+    }
+
+    function drawCarrierBoss(boss) {
+        // 항공모함 본체
+        ctx.fillStyle = boss.color;
+        ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+        
+        // 항공모함 디테일
+        ctx.fillStyle = '#ff00ff';
+        ctx.fillRect(boss.x + boss.width * 0.2, boss.y + boss.height * 0.3, boss.width * 0.6, boss.height * 0.4);
+        
+        // 비행기 격납고
+        ctx.fillStyle = '#00ffff';
+        for (let i = 0; i < 3; i++) {
+            ctx.fillRect(boss.x + boss.width * 0.25 + i * boss.width * 0.2, 
+                        boss.y + boss.height * 0.1, boss.width * 0.1, boss.height * 0.2);
+        }
+        
+        // 보스 표시
+        ctx.fillStyle = '#ff00ff';
+        ctx.font = `${12 * gameScale}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('CARRIER', boss.x + boss.width / 2, boss.y - 10);
     }
 
     function drawExplosions() {
@@ -1246,6 +1819,42 @@
                 ctx.fillText(`⚡ 속도 효과: ${Math.round((timeSaved / baseTime) * 100)}% 단축`, 10, 105);
             }
         }
+        
+        // 시간 압박 효과 표시
+        const timePressure = Math.max(0, (120 - gameState.stageTimer) / 120);
+        if (timePressure > 0.3) {
+            const intensity = Math.min(255, timePressure * 255);
+            ctx.fillStyle = `rgb(${intensity}, 0, 0)`;
+            ctx.font = `${14 * gameScale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText(`⚠️ 시간 압박! 적 스폰 ${Math.round(timePressure * 200)}% 증가`, canvas.width / 2, 30);
+            ctx.textAlign = 'left';
+        }
+        
+        // 보스 상태 표시
+        if (gameState.currentBoss) {
+            ctx.fillStyle = '#ff00ff';
+            ctx.font = `${16 * gameScale}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText(`🚨 보스 출현! ${gameState.currentBoss.type === 'cruiser_boss' ? '중순양함' : '항공모함'}`, canvas.width / 2, 60);
+            ctx.textAlign = 'left';
+        }
+
+        // 적의 색깔에 따른 AI 타입 정보 표시 (우측 상단)
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `${10 * gameScale}px Arial`;
+        ctx.textAlign = 'right';
+        
+        let infoY = 25;
+        ctx.fillText(`🟠 주황색: 자폭형 적 (플레이어를 향해 직진)`, canvas.width - 10, infoY);
+        infoY += 20;
+        ctx.fillText(`🔴 진한 분홍색: 부술 수 없는 총알 (2초마다 발사)`, canvas.width - 10, infoY);
+        infoY += 20;
+        ctx.fillText(`🟣 보라색: 부술 수 있는 총알 (1초마다 발사, 3초 후 퇴장)`, canvas.width - 10, infoY);
+        infoY += 20;
+        ctx.fillText(`🔴 빨간색/분홍색: 일반 추적형 적`, canvas.width - 10, infoY);
+        
+        ctx.textAlign = 'left';
     }
 
     // ===== 스테이지별 랜덤 미션 생성 함수 =====
