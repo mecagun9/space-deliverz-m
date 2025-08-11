@@ -807,7 +807,8 @@
         const enemyType = Math.random() + difficultyBonus * 0.2;
         let enemy;
         
-        const baseSize = 25 * gameScale;
+        // 적 크기 1.5배 확대
+        const baseSize = 25 * gameScale * 1.5;
         const baseSpeed = gameScale;
         
         // 적의 색깔에 따라 AI 타입 고정

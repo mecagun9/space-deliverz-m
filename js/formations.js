@@ -62,7 +62,8 @@
     const speedMul = (def.speedMul ?? 1) * (opts.speedMul ?? 1);
     def.nodes.forEach(n => {
       const p = toCanvas(n.x, n.y);
-      const baseSize = 25 * scale;
+      // 적 크기 1.5배 확대 (formation 생성에도 동일 적용)
+      const baseSize = 25 * scale * 1.5;
       const baseSpeed = scale * diff * 0.5 * speedMul;
       const color = n.color || '#ff00ff';
 

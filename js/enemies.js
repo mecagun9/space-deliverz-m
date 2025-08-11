@@ -14,7 +14,8 @@
   // 적 총알 스폰(부술 수 있는/없는 타입 포함)
   game.spawnEnemyBullet = function(enemy, bulletType){
     const gameScale = game.gameScale || 1;
-    const bulletSize = 4 * gameScale;
+    // 적 총알 크기 5배 확대
+    const bulletSize = 20 * gameScale;
     const bulletSpeed = 3 * gameScale;
     const player = game.player;
 
