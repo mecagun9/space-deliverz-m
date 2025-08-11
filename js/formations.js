@@ -3,6 +3,13 @@
   const game = window;
 
   const formations = [
+    // 1번 패턴: 동일 크기 4대가 가로로 정렬되어 아래로 하강
+    { name: 'pattern_1_horizontal_down', ai: 'chase', speedMul: 1.0, path: 'down', nodes: [
+      { x: 0.25, y: -0.10, color: '#ff0000' },
+      { x: 0.40, y: -0.10, color: '#ff0000' },
+      { x: 0.55, y: -0.10, color: '#ff0000' },
+      { x: 0.70, y: -0.10, color: '#ff0000' },
+    ]},
     { name: 'vee_small', ai: 'chase', speedMul: 1.0, nodes: [
       { x: 0.50, y: -0.10, color: '#ff00ff' },
       { x: 0.45, y: -0.15, color: '#ff00ff' },
