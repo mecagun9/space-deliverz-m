@@ -771,7 +771,18 @@
                 }
             }
             
-            spawnNormalEnemy(enemyX, enemyY, destination);
+            // 일정 확률로 편대 스폰
+            const formationChance = Math.min(0.1 + gameState.stage * 0.02, 0.5); // 단계가 오를수록 편대 확률 증가(최대 50%)
+            if (window.spawnFormation && Math.random() < formationChance) {
+                const idx = Math.floor(Math.random() * (window.FORMATIONS?.length || 0));
+                if (!isNaN(idx) && (window.FORMATIONS?.[idx])) {
+                    window.spawnFormation(idx, { speedMul: 1 + (timePressure * 0.5) });
+                } else {
+                    spawnNormalEnemy(enemyX, enemyY, destination);
+                }
+            } else {
+                spawnNormalEnemy(enemyX, enemyY, destination);
+            }
             gameState.lastEnemySpawn = now;
         }
     }
@@ -1070,6 +1081,10 @@
             } else if (enemy.type === 'carrier_boss') {
                 updateCarrierBoss(enemy);
             } else {
+                // 편대 경로 업데이트(있을 경우)
+                if (enemy.type === 'formation' && window.tickFormationMovement) {
+                    window.tickFormationMovement(enemy);
+                }
                 // 적의 색깔에 따라 AI 타입 결정
                 if (enemy.color === '#ff3300') {
                     // 자폭형 적 (주황색)
