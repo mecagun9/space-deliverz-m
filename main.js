@@ -1,100 +1,10 @@
 (() => {
     "use strict";
 
-    // ===== 게임 데이터 정의 =====
-    const DESTINATIONS = {
-        nearby: { 
-            name: '🌍 근거리 행성', 
-            description: '안전하지만 보상이 적습니다.',
-            time: 75, 
-            difficulty: 1, 
-            goldMultiplier: 1, 
-            diamondMultiplier: 1,
-            details: '⭐ 위험도: 낮음 | 적 속도: 보통 | 적 체력: 1'
-        },
-        medium: { 
-            name: '🪐 중거리 행성',
-            description: '적당한 위험과 보상입니다.',
-            time: 90, 
-            difficulty: 1.5, 
-            goldMultiplier: 1.2, 
-            diamondMultiplier: 1.2,
-            details: '⭐⭐ 위험도: 중간 | 적 속도: 빠름 | 적 체력: 1-2'
-        },
-        far: { 
-            name: '🌌 원거리 행성',
-            description: '위험하지만 보상이 좋습니다.',
-            time: 120, 
-            difficulty: 2, 
-            goldMultiplier: 1.5, 
-            diamondMultiplier: 1.5,
-            details: '⭐⭐⭐ 위험도: 높음 | 적 속도: 매우 빠름 | 적 체력: 2-3'
-        },
-        dangerous: { 
-            name: '⚠️ 위험 지역',
-            description: '매우 위험하지만 최고의 보상!',
-            time: 150, 
-            difficulty: 3, 
-            goldMultiplier: 2, 
-            diamondMultiplier: 2,
-            details: '⭐⭐⭐⭐ 위험도: 매우 높음 | 적 속도: 극한 | 적 체력: 3-5'
-        },
-        // 새로운 목적지들 추가
-        asteroid: { 
-            name: '☄️ 소행성 벨트',
-            description: '소행성들이 가득한 위험한 구역입니다.',
-            time: 100, 
-            difficulty: 2.5, 
-            goldMultiplier: 1.8, 
-            diamondMultiplier: 1.8,
-            details: '⭐⭐⭐⭐ 위험도: 매우 높음 | 적 속도: 극한 | 적 체력: 3-4'
-        },
-        nebula: { 
-            name: '🌫️ 성운 지대',
-            description: '신비로운 에너지가 가득한 지역입니다.',
-            time: 130, 
-            difficulty: 2.2, 
-            goldMultiplier: 1.6, 
-            diamondMultiplier: 1.6,
-            details: '⭐⭐⭐ 위험도: 높음 | 적 속도: 빠름 | 적 체력: 2-3'
-        },
-        blackhole: { 
-            name: '🕳️ 블랙홀 근처',
-            description: '시공간이 뒤틀린 극한의 위험 지역!',
-            time: 180, 
-            difficulty: 4, 
-            goldMultiplier: 3, 
-            diamondMultiplier: 3,
-            details: '⭐⭐⭐⭐⭐ 위험도: 극한 | 적 속도: 극한 | 적 체력: 4-6'
-        },
-        wormhole: { 
-            name: '🌀 웜홀 입구',
-            description: '차원을 넘나드는 신비로운 통로입니다.',
-            time: 140, 
-            difficulty: 2.8, 
-            goldMultiplier: 2.2, 
-            diamondMultiplier: 2.2,
-            details: '⭐⭐⭐⭐ 위험도: 매우 높음 | 적 속도: 극한 | 적 체력: 3-5'
-        }
-    };
+    // ===== 데이터(목적지/화물) 외부 분리 참조 =====
+    const DESTINATIONS = window.DESTINATIONS;
 
-    const CARGO_TYPES = {
-        military: { name: '군사 물자', damageBonus: 0.5, enemySpawnRate: 1.3, reward: 15 },
-        medical: { name: '의료 용품', bonusLife: 1, speedPenalty: 0.1, reward: 10 },
-        energy: { name: '에너지 셀', fireRateBonus: 0.3, reward: 12 },
-        luxury: { name: '고급품', diamondBonus: 1, speedPenalty: 0.2, reward: 25 },
-        tech: { name: '기술 부품', turretAccuracy: 0.25, reward: 18 },
-        fuel: { name: '연료', speedBonus: 0.2, reward: 8 },
-        food: { name: '식량', effects: {}, reward: 20, goldReward: true },
-        art: { name: '예술품', effects: {}, reward: 15, diamondReward: true },
-        // 새로운 화물들 추가
-        quantum: { name: '양자 물질', damageBonus: 0.8, fireRateBonus: 0.5, reward: 30 },
-        plasma: { name: '플라즈마', damageBonus: 0.3, speedBonus: 0.3, reward: 22 },
-        crystal: { name: '크리스탈', diamondBonus: 2, reward: 35, diamondReward: true },
-        nanotech: { name: '나노 기술', turretAccuracy: 0.4, fireRateBonus: 0.4, reward: 28 },
-        antimatter: { name: '반물질', damageBonus: 1.0, speedPenalty: 0.3, reward: 40 },
-        darkmatter: { name: '암흑 물질', diamondBonus: 3, speedPenalty: 0.4, reward: 45, diamondReward: true }
-    };
+    const CARGO_TYPES = window.CARGO_TYPES;
 
     // ===== 게임 상태 변수들 =====
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
@@ -664,14 +574,34 @@
                 startActualGameplay();
             }, 300);
         }
+
+        // 화면 회전/리사이즈 시 인터미션도 즉시 리사이즈
+        const intermissionResizeHandler = () => {
+            if (inter.style.display === 'flex') {
+                resizeIntermissionCanvas();
+                // 크기 변경 시 배경만 재그림 (애니메이션 프레임은 다음 사이클에서 반영)
+                drawBackground();
+            }
+        };
+        window.addEventListener('resize', intermissionResizeHandler, { passive: true });
+
+        // 인터미션 종료 시 리스너 제거
+        const cleanup = () => window.removeEventListener('resize', intermissionResizeHandler);
+        // 게임 시작으로 넘어갈 때 정리되도록 래핑
+        const originalStartActualGameplay = startActualGameplay;
+        window.startActualGameplay = function() {
+            cleanup();
+            originalStartActualGameplay();
+            window.startActualGameplay = originalStartActualGameplay; // 원복
+        };
     }
 
     // 인터미션 캔버스 리사이즈 함수
     function resizeIntermissionCanvas() {
         const interCanvas = document.getElementById('intermissionCanvas');
         if (!interCanvas) return;
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
+        const windowWidth = (window.visualViewport && window.visualViewport.width) || window.innerWidth;
+        const windowHeight = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
 
         const targetWidth = 768;
         const targetHeight = 260;
@@ -681,13 +611,14 @@
         let height;
 
         if (isMobile || windowWidth <= 900) {
-            const horizontalPadding = 12;
-            const verticalReserve = 160; // 텍스트 라인 등 약간 더 여유
+            const horizontalPadding = 8;   // 모바일에서는 여백 최소화
+            const verticalReserve = 80;    // 상/하단 여백 줄여서 더 크게 표시
             const scaleX = (windowWidth - horizontalPadding) / targetWidth;
             const scaleY = (windowHeight - verticalReserve) / targetHeight;
+            // 모바일에서는 가로 기준으로 크게 보이게, 세로는 넘치지 않게 제한
             scale = Math.max(0.5, Math.min(scaleX, scaleY));
         } else {
-            scale = Math.min(1, (windowHeight - 400) / targetHeight);
+            scale = Math.min(1, (windowHeight - 280) / targetHeight);
         }
 
         width = Math.floor(targetWidth * scale);
@@ -695,6 +626,9 @@
 
         interCanvas.width = width;
         interCanvas.height = height;
+        // CSS 사이즈도 명시하여 레이아웃 일치
+        interCanvas.style.width = width + 'px';
+        interCanvas.style.height = height + 'px';
     }
 
     function startActualGameplay() {
@@ -925,69 +859,14 @@
     }
 
     // ===== 보스 적 생성 함수들 =====
-    function spawnBoss() {
-        if (gameState.stage === 2) {
-            spawnCruiserBoss();
-        } else if (gameState.stage >= 3) {
-            spawnCarrierBoss();
-        }
-    }
+    // 분리된 전역 함수 사용 (js/enemies.js)
+    const spawnBoss = window.spawnBoss;
 
     // 2스테이지 보스: 중순양함
-    function spawnCruiserBoss() {
-        const boss = {
-            x: canvas.width / 2 - 60 * gameScale,
-            y: -80 * gameScale,
-            width: 120 * gameScale,
-            height: 60 * gameScale,
-            speed: 0.5 * gameScale,
-            color: '#8B0000', // 진한 빨간색
-            type: 'cruiser_boss',
-            hp: 50 + gameState.stage * 10,
-            maxHp: 50 + gameState.stage * 10,
-            goldValue: 100 + gameState.stage * 20,
-            lastShot: 0,
-            shotInterval: 2000, // 2초마다 발사
-            phase: 1, // 보스 페이즈
-            movePattern: 'horizontal', // 좌우 이동 패턴
-            moveDirection: 1,
-            moveRange: 200 * gameScale
-        };
-        
-        enemies.push(boss);
-        gameState.currentBoss = boss;
-        
-        // 보스 등장 효과음
-        playSound(200, 0.3);
-    }
+    const spawnCruiserBoss = window.spawnCruiserBoss;
 
     // 3스테이지 이상 보스: 항공모함
-    function spawnCarrierBoss() {
-        const boss = {
-            x: canvas.width / 2 - 80 * gameScale,
-            y: -100 * gameScale,
-            width: 160 * gameScale,
-            height: 80 * gameScale,
-            speed: 0.3 * gameScale,
-            color: '#4B0082', // 진한 보라색
-            type: 'carrier_boss',
-            hp: 80 + gameState.stage * 15,
-            maxHp: 80 + gameState.stage * 15,
-            goldValue: 150 + gameState.stage * 25,
-            lastShot: 0,
-            shotInterval: 1500, // 1.5초마다 비행기 생성
-            phase: 1,
-            movePattern: 'stationary', // 고정 위치
-            fighterSpawnCount: 0,
-            maxFighters: 5 + gameState.stage * 2
-        };
-        
-        enemies.push(boss);
-        gameState.currentBoss = boss;
-        
-        // 보스 등장 효과음
-        playSound(150, 0.4);
-    }
+    const spawnCarrierBoss = window.spawnCarrierBoss;
 
     function createExplosion(x, y) {
         for (let i = 0; i < 5; i++) {
@@ -1364,37 +1243,8 @@
         }
     }
     
-    function spawnEnemyBullet(enemy, bulletType) {
-        const bulletSize = 4 * gameScale;
-        const bulletSpeed = 3 * gameScale;
-        
-        // 플레이어 방향으로 총알 발사
-        const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
-        const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance > 0) {
-            const vx = (dx / distance) * bulletSpeed;
-            const vy = (dy / distance) * bulletSpeed;
-            
-            // 공용 총알 함수 사용
-            const bullet = createBullet(
-                enemy.x + enemy.width/2 - bulletSize/2,
-                enemy.y + enemy.height/2 - bulletSize/2,
-                bulletSize,
-                bulletSize,
-                vx,
-                vy,
-                bulletType,
-                enemy.color // 적의 색깔을 사용하여 총알 색깔 결정
-            );
-            
-            enemyBullets.push(bullet);
-            
-            // 총알 발사 효과음
-            playSound(300, 0.1);
-        }
-    }
+    // 적 총알은 js/enemies.js의 전역 함수 사용
+    const spawnEnemyBullet = window.spawnEnemyBullet;
 
     // ===== 보스 적 업데이트 함수들 =====
     function updateCruiserBoss(boss) {
