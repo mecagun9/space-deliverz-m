@@ -882,6 +882,9 @@
                 goldValue: 8 + gameState.stage,
                 aiType: 'chase'
             };
+        } else if (enemyType < 0.9 && gameState.stage === 1) {
+            // 스테이지 1에서만: 노란색 총알 발사형 적
+            enemy = spawnYellowShooterEnemy(enemyX, enemyY);
         } else {
             // 기존: 강한 적
             enemy = {
@@ -907,6 +910,9 @@
 
     // 3스테이지 이상 보스: 항공모함
     const spawnCarrierBoss = window.spawnCarrierBoss;
+
+    // 노란색 적 생성 함수
+    const spawnYellowShooterEnemy = window.spawnYellowShooterEnemy;
 
     function createExplosion(x, y) {
         for (let i = 0; i < 5; i++) {

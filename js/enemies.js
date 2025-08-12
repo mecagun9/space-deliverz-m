@@ -26,37 +26,44 @@
   // 적 총알 스폰(부술 수 있는/없는 타입 포함)
   game.spawnEnemyBullet = function(enemy, bulletType){
     const gameScale = game.gameScale || 1;
-    // 적 총알 크기 5배 확대
-    const bulletSize = 4 * gameScale * 5;
+    const bulletSize = 4 * gameScale * 5; // 적 총알 크기 5배 확대
     const bulletSpeed = 3 * gameScale;
     const player = game.player;
-
     const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
     const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
     const distance = Math.sqrt(dx*dx + dy*dy) || 1;
-
     const vx = (dx / distance) * bulletSpeed;
     const vy = (dy / distance) * bulletSpeed;
-
     const bullet = game.createBullet(
       enemy.x + enemy.width/2 - bulletSize/2,
       enemy.y + enemy.height/2 - bulletSize/2,
-      bulletSize,
-      bulletSize,
-      vx,
-      vy,
-      bulletType,
-      enemy.color
+      bulletSize, bulletSize, vx, vy, bulletType, enemy.color
     );
-    
-    // 총알에 필수 속성 추가
-    bullet.lastUpdate = Date.now();
-    
-    // main.js의 enemyBullets 배열에 직접 추가
+    bullet.lastUpdate = Date.now(); // 총알에 필수 속성 추가
     if (game.enemyBullets && Array.isArray(game.enemyBullets)) {
-      game.enemyBullets.push(bullet);
+      game.enemyBullets.push(bullet); // main.js의 enemyBullets 배열에 직접 추가
     }
     game.playSound && game.playSound(300, 0.1);
+  };
+
+  // 노란색 적 스폰 함수
+  game.spawnYellowShooterEnemy = function(x, y) {
+    const gameScale = game.gameScale || 1;
+    const enemySize = 20 * gameScale * 1.5; // 적 크기 1.5배
+    return {
+      x: x,
+      y: y,
+      width: enemySize,
+      height: enemySize,
+      color: '#FFD93D', // 노란색
+      type: 'yellow_shooter',
+      speed: 0.8 * gameScale,
+      hp: 2,
+      hasStopped: false,
+      stopDistance: 200 * gameScale,
+      shotInterval: 5000, // 5초
+      lastShot: 0
+    };
   };
 
   game.spawnBoss = function() {
