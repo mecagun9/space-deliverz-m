@@ -1,5 +1,4 @@
-(() => {
-    "use strict";
+"use strict";
 
     // ===== 데이터(목적지/화물) 외부 분리 참조 =====
     const DESTINATIONS = window.DESTINATIONS;
@@ -2119,4 +2118,3 @@
     const updateShooterIndestructibleEnemy = window.updateShooterIndestructibleEnemy;
     const updateShooterDestructibleEnemy = window.updateShooterDestructibleEnemy;
     const updateChaseEnemy = window.updateChaseEnemy;
-})();
