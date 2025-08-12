@@ -1124,6 +1124,9 @@
                 } else if (enemy.color === '#9933ff') {
                     // 부술 수 있는 총알 발사형 적 (보라색)
                     updateShooterDestructibleEnemy(enemy);
+                } else if (enemy.color === '#FFD93D') {
+                    // 노란색 총알 발사형 적
+                    updateYellowShooterEnemy(enemy);
                 } else {
                     // 기존 일반 적 처리 (chase AI) - 빨간색, 분홍색
                     updateChaseEnemy(enemy);
@@ -2030,6 +2033,7 @@
     const updateShooterIndestructibleEnemy = window.updateShooterIndestructibleEnemy;
     const updateShooterDestructibleEnemy = window.updateShooterDestructibleEnemy;
     const updateChaseEnemy = window.updateChaseEnemy;
+    const updateYellowShooterEnemy = window.updateYellowShooterEnemy;
 
     // ===== 전역 함수 노출 =====
     window.startGame = startGame;

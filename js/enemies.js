@@ -5,6 +5,24 @@
   // 공용 총알 생성/그리기 함수는 main.js에서 제공
   // game.createBullet과 game.drawBullet은 main.js에서 정의됨
 
+  // 스테이지별 적 타입 정의
+  const STAGE_ENEMIES = {
+    1: [
+      { type: 'chase', color: '#FF6B6B', speed: 1, hp: 1, size: 1.5, spawnRate: 0.8 },
+      { type: 'yellow_shooter', color: '#FFD93D', speed: 0.8, hp: 2, size: 1.5, spawnRate: 0.6 }
+    ],
+    2: [
+      { type: 'chase', color: '#FF6B6B', speed: 1.2, hp: 1, size: 1.5, spawnRate: 0.8 },
+      { type: 'kamikaze', color: '#FF8E53', speed: 1.5, hp: 1, size: 1.5, spawnRate: 0.7 },
+      { type: 'shooter_indestructible', color: '#6C5CE7', speed: 0.8, hp: 3, size: 1.5, spawnRate: 0.5 }
+    ],
+    3: [
+      { type: 'chase', color: '#FF6B6B', speed: 1.4, hp: 2, size: 1.5, spawnRate: 0.8 },
+      { type: 'kamikaze', color: '#FF8E53', speed: 1.8, hp: 1, size: 1.5, spawnRate: 0.7 },
+      { type: 'shooter_destructible', color: '#A8E6CF', speed: 0.8, hp: 2, size: 1.5, spawnRate: 0.5 }
+    ]
+  };
+
   // 적 총알 스폰(부술 수 있는/없는 타입 포함)
   game.spawnEnemyBullet = function(enemy, bulletType){
     const gameScale = game.gameScale || 1;

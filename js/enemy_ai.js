@@ -96,6 +96,37 @@
     enemy.x += (dx / distance) * enemy.speed;
     enemy.y += (dy / distance) * enemy.speed;
   };
+
+  game.updateYellowShooterEnemy = function(enemy){
+    const player = game.player;
+    const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
+    const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
+    const distance = Math.sqrt(dx*dx + dy*dy) || 1;
+    
+    // stopDistance가 정의되지 않은 경우 기본값 설정
+    if (enemy.stopDistance === undefined) {
+      enemy.stopDistance = 200 * (game.gameScale || 1);
+    }
+    
+    if (!enemy.hasStopped && distance > enemy.stopDistance){
+      enemy.x += (dx / distance) * enemy.speed;
+      enemy.y += (dy / distance) * enemy.speed;
+    } else if (!enemy.hasStopped) {
+      enemy.hasStopped = true;
+    }
+    
+    if (enemy.hasStopped){
+      const now = Date.now();
+      // shotInterval이 정의되지 않은 경우 기본값 설정 (5초 = 5000ms)
+      if (enemy.shotInterval === undefined) {
+        enemy.shotInterval = 5000;
+      }
+      if (now - (enemy.lastShot || 0) > enemy.shotInterval){
+        game.spawnEnemyBullet(enemy, 'destructible');
+        enemy.lastShot = now;
+      }
+    }
+  };
 })();
 
 
