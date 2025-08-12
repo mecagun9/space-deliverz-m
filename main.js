@@ -1429,6 +1429,59 @@
         ctx.restore();
     }
 
+    // ===== 공용 총알 함수들 =====
+    function createBullet(x, y, width, height, vx, vy, type, color, damage = 1) {
+        return {
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            vx: vx,
+            vy: vy,
+            type: type,
+            color: color,
+            damage: damage
+        };
+    }
+    
+    function drawBullet(bullet, ctx) {
+        if (bullet.type === 'indestructible') {
+            // 부술 수 없는 총알: 붉은 외곽 + 노란 내부 (항상 동일하게 표시)
+            const outerColor = '#8B0000'; // 매우 붉은색
+            const innerColor = '#FFFF00'; // 노란색
+            const cx = bullet.x + bullet.width / 2;
+            const cy = bullet.y + bullet.height / 2;
+            const rOuter = Math.max(1, bullet.width / 2);
+            const rInner = Math.max(0.5, bullet.width / 3);
+
+            ctx.fillStyle = outerColor;
+            ctx.beginPath();
+            ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = innerColor;
+            ctx.beginPath();
+            ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (bullet.type === 'destructible') {
+            // 부술 수 있는 총알: 적의 색깔과 동일하게 표시
+            ctx.fillStyle = bullet.color || '#9933ff';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        } else if (bullet.type === 'player') {
+            // 플레이어 총알: 노란색
+            ctx.fillStyle = '#ffff00';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        } else if (bullet.type === 'turret') {
+            // 포탑 총알: 초록색
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        } else {
+            // 기본 총알: 빨간색
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        }
+    }
+
     function drawBullets() {
         // 플레이어 총알
         bullets.forEach(bullet => {

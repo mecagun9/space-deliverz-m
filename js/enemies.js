@@ -2,14 +2,8 @@
 (function(){
   const game = window;
 
-  // 공용 총알 생성/그리기 함수 바인딩을 main에 의존하므로, 여기서 래핑
-  game.createBullet = game.createBullet || function(x, y, w, h, vx, vy, type, color, damage){
-    return { x, y, width:w, height:h, vx, vy, type, color, damage: damage ?? 1 };
-  };
-
-  game.drawBullet = game.drawBullet || function(bullet, ctx){
-    // 기본 구현: main의 구현을 사용하도록 남겨둠
-  };
+  // 공용 총알 생성/그리기 함수는 main.js에서 제공
+  // game.createBullet과 game.drawBullet은 main.js에서 정의됨
 
   // 적 총알 스폰(부술 수 있는/없는 타입 포함)
   game.spawnEnemyBullet = function(enemy, bulletType){
@@ -40,7 +34,10 @@
     // 총알에 필수 속성 추가
     bullet.lastUpdate = Date.now();
     
-    game.enemyBullets.push(bullet);
+    // main.js의 enemyBullets 배열에 직접 추가
+    if (game.enemyBullets && Array.isArray(game.enemyBullets)) {
+      game.enemyBullets.push(bullet);
+    }
     game.playSound && game.playSound(300, 0.1);
   };
 
