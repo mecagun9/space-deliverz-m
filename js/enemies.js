@@ -15,7 +15,7 @@
   game.spawnEnemyBullet = function(enemy, bulletType){
     const gameScale = game.gameScale || 1;
     // 적 총알 크기 5배 확대
-    const bulletSize = 20 * gameScale;
+    const bulletSize = 4 * gameScale * 5;
     const bulletSpeed = 3 * gameScale;
     const player = game.player;
 
@@ -36,6 +36,10 @@
       bulletType,
       enemy.color
     );
+    
+    // 총알에 필수 속성 추가
+    bullet.lastUpdate = Date.now();
+    
     game.enemyBullets.push(bullet);
     game.playSound && game.playSound(300, 0.1);
   };

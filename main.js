@@ -2112,4 +2112,11 @@
     window.addTurret = addTurret;
     window.returnToPrep = returnToPrep;
     window.toggleDiamondUpgrades = toggleDiamondUpgrades;
+
+    // ===== 적 AI 업데이트 함수들 =====
+    // js/enemy_ai.js의 전역 함수들 사용
+    const updateKamikazeEnemy = window.updateKamikazeEnemy;
+    const updateShooterIndestructibleEnemy = window.updateShooterIndestructibleEnemy;
+    const updateShooterDestructibleEnemy = window.updateShooterDestructibleEnemy;
+    const updateChaseEnemy = window.updateChaseEnemy;
 })();

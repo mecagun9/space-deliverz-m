@@ -18,15 +18,26 @@
     const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
     const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
     const distance = Math.sqrt(dx*dx + dy*dy) || 1;
+    
+    // stopDistance가 정의되지 않은 경우 기본값 설정
+    if (enemy.stopDistance === undefined) {
+      enemy.stopDistance = 150 * (game.gameScale || 1);
+    }
+    
     if (!enemy.hasStopped && distance > enemy.stopDistance){
       enemy.x += (dx / distance) * enemy.speed;
       enemy.y += (dy / distance) * enemy.speed;
     } else if (!enemy.hasStopped) {
       enemy.hasStopped = true;
     }
+    
     if (enemy.hasStopped){
       const now = Date.now();
-      if (now - enemy.lastShot > enemy.shotInterval){
+      // shotInterval이 정의되지 않은 경우 기본값 설정
+      if (enemy.shotInterval === undefined) {
+        enemy.shotInterval = 2000;
+      }
+      if (now - (enemy.lastShot || 0) > enemy.shotInterval){
         game.spawnEnemyBullet(enemy, 'indestructible');
         enemy.lastShot = now;
       }
@@ -39,6 +50,12 @@
     const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
     const distance = Math.sqrt(dx*dx + dy*dy) || 1;
     const now = Date.now();
+    
+    // stopDistance가 정의되지 않은 경우 기본값 설정
+    if (enemy.stopDistance === undefined) {
+      enemy.stopDistance = 180 * (game.gameScale || 1);
+    }
+    
     if (!enemy.hasStopped && distance > enemy.stopDistance){
       enemy.x += (dx / distance) * enemy.speed;
       enemy.y += (dy / distance) * enemy.speed;
@@ -46,10 +63,20 @@
       enemy.hasStopped = true;
       enemy.stopTime = now;
     }
+    
     if (enemy.hasStopped){
-      if (now - enemy.lastShot > enemy.shotInterval){
+      // shotInterval이 정의되지 않은 경우 기본값 설정
+      if (enemy.shotInterval === undefined) {
+        enemy.shotInterval = 1000;
+      }
+      if (now - (enemy.lastShot || 0) > enemy.shotInterval){
         game.spawnEnemyBullet(enemy, 'destructible');
         enemy.lastShot = now;
+      }
+      
+      // maxStopTime이 정의되지 않은 경우 기본값 설정
+      if (enemy.maxStopTime === undefined) {
+        enemy.maxStopTime = 3000;
       }
       if (now - enemy.stopTime > enemy.maxStopTime){
         const canvas = document.getElementById('gameCanvas');
@@ -64,7 +91,7 @@
   game.updateChaseEnemy = function(enemy){
     const player = game.player;
     const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
-    const dy = player.y + enemy.height/2 - (enemy.y + enemy.height/2);
+    const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
     const distance = Math.sqrt(dx*dx + dy*dy) || 1;
     enemy.x += (dx / distance) * enemy.speed;
     enemy.y += (dy / distance) * enemy.speed;
