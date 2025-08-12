@@ -1,9 +1,9 @@
 "use strict";
 
     // ===== 데이터(목적지/화물) 외부 분리 참조 =====
-    const DESTINATIONS = window.DESTINATIONS;
+    const DESTINATIONS = window.DESTINATIONS || {};
 
-    const CARGO_TYPES = window.CARGO_TYPES;
+    const CARGO_TYPES = window.CARGO_TYPES || {};
 
     // ===== 게임 상태 변수들 =====
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
@@ -331,6 +331,12 @@
 
     // ===== UI 관련 함수들 =====
     function selectDestination(destKey) {
+        // DESTINATIONS가 로드되지 않았으면 기본값 사용
+        if (!DESTINATIONS[destKey]) {
+            console.warn('DESTINATIONS not loaded, using fallback');
+            return;
+        }
+        
         gameState.selectedDestination = destKey;
         document.querySelectorAll('[data-destination]').forEach(card => {
             card.classList.remove('selected');
@@ -348,6 +354,12 @@
     }
 
     function selectCargo(cargoKey) {
+        // CARGO_TYPES가 로드되지 않았으면 기본값 사용
+        if (!CARGO_TYPES[cargoKey]) {
+            console.warn('CARGO_TYPES not loaded, using fallback');
+            return;
+        }
+        
         const maxSlots = getMaxCargoSlots();
         const currentIndex = gameState.selectedCargos.indexOf(cargoKey);
         
@@ -408,14 +420,16 @@
         if (!gameState.selectedDestination) return;
         
         const destination = DESTINATIONS[gameState.selectedDestination];
+        if (!destination) return;
+        
         const baseTime = destination.time;
         
         // 현재 우주선 속도와 선택된 화물을 고려한 예상 시간 계산
         let speedMultiplier = 1;
         gameState.selectedCargos.forEach(cargoKey => {
             const cargo = CARGO_TYPES[cargoKey];
-            if (cargo.speedPenalty) speedMultiplier -= cargo.speedPenalty;
-            if (cargo.speedBonus) speedMultiplier += cargo.speedBonus;
+            if (cargo && cargo.speedPenalty) speedMultiplier -= cargo.speedPenalty;
+            if (cargo && cargo.speedBonus) speedMultiplier += cargo.speedBonus;
         });
         
         const speedBonus = getShipSpeedBonus() / 100;
@@ -2087,17 +2101,7 @@
         }
     }
 
-    // ===== 초기화 =====
-    window.addEventListener('load', () => {
-        setupEventListeners();
-        updatePrepUI();
-        updateCargoSlotDisplay();
-        resizeCanvas();
-        
-        // 첫 번째 스테이지 미션 표시
-        showStageMission(1);
-    });
-
+    // ===== 전역 함수 노출 =====
     window.startGame = startGame;
     window.selectDestination = selectDestination;
     window.selectCargo = selectCargo;
@@ -2111,6 +2115,17 @@
     window.addTurret = addTurret;
     window.returnToPrep = returnToPrep;
     window.toggleDiamondUpgrades = toggleDiamondUpgrades;
+
+    // ===== 초기화 =====
+    window.addEventListener('load', () => {
+        setupEventListeners();
+        updatePrepUI();
+        updateCargoSlotDisplay();
+        resizeCanvas();
+        
+        // 첫 번째 스테이지 미션 표시
+        showStageMission(1);
+    });
 
     // ===== 적 AI 업데이트 함수들 =====
     // js/enemy_ai.js의 전역 함수들 사용
