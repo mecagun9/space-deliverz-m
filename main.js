@@ -2101,21 +2101,6 @@
         }
     }
 
-    // ===== 전역 함수 노출 =====
-    window.startGame = startGame;
-    window.selectDestination = selectDestination;
-    window.selectCargo = selectCargo;
-    window.showDiamondShop = showDiamondShop;
-    window.closeDiamondShop = closeDiamondShop;
-    window.confirmPurchase = confirmPurchase;
-    window.closePurchaseModal = closePurchaseModal;
-    window.executePurchase = executePurchase;
-    window.upgradeDamage = upgradeDamage;
-    window.upgradeSpeed = upgradeSpeed;
-    window.addTurret = addTurret;
-    window.returnToPrep = returnToPrep;
-    window.toggleDiamondUpgrades = toggleDiamondUpgrades;
-
     // ===== 초기화 =====
     window.addEventListener('load', () => {
         setupEventListeners();
@@ -2133,3 +2118,18 @@
     const updateShooterIndestructibleEnemy = window.updateShooterIndestructibleEnemy;
     const updateShooterDestructibleEnemy = window.updateShooterDestructibleEnemy;
     const updateChaseEnemy = window.updateChaseEnemy;
+
+    // ===== 전역 함수 노출 =====
+    window.startGame = startGame;
+    window.selectDestination = selectDestination;
+    window.selectCargo = selectCargo;
+    window.showDiamondShop = showDiamondShop;
+    window.closeDiamondShop = closeDiamondShop;
+    window.confirmPurchase = confirmPurchase;
+    window.closePurchaseModal = closePurchaseModal;
+    window.executePurchase = executePurchase;
+    window.upgradeDamage = upgradeDamage;
+    window.upgradeSpeed = upgradeSpeed;
+    window.addTurret = addTurret;
+    window.returnToPrep = returnToPrep;
+    window.toggleDiamondUpgrades = toggleDiamondUpgrades;
