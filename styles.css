@@ -186,6 +186,12 @@ body {
     border-radius: 8px;
 }
 
+#unloadIntermissionCanvas {
+    border: 2px solid #00ffff;
+    background: radial-gradient(ellipse at center, #001122 0%, #000000 100%);
+    border-radius: 8px;
+}
+
 /* 다이아 상점 화면 */
 #diamondShopScreen {
     position: fixed;

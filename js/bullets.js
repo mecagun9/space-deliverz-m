@@ -60,7 +60,7 @@
     
     switch(bullet.type) {
       case 'indestructible':
-        // 부술 수 없는 총알: 붉은 외곽 + 노란 내부
+        // 부술 수 없는 총알: 붉은 외곽 + 노란 내부 + 특별한 효과
         const outerColor = '#8B0000'; // 매우 붉은색
         const innerColor = '#FFFF00'; // 노란색
         const cx = bullet.x + bullet.width / 2;
@@ -79,6 +79,16 @@
         ctx.beginPath();
         ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
         ctx.fill();
+
+        // 부술 수 없음을 나타내는 X 표시
+        ctx.strokeStyle = '#FF0000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx - rInner * 0.7, cy - rInner * 0.7);
+        ctx.lineTo(cx + rInner * 0.7, cy + rInner * 0.7);
+        ctx.moveTo(cx + rInner * 0.7, cy - rInner * 0.7);
+        ctx.lineTo(cx - rInner * 0.7, cy + rInner * 0.7);
+        ctx.stroke();
         break;
         
       case 'destructible':
