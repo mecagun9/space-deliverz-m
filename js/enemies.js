@@ -5,65 +5,26 @@
   // 공용 총알 생성/그리기 함수는 main.js에서 제공
   // game.createBullet과 game.drawBullet은 main.js에서 정의됨
 
-  // 스테이지별 적 타입 정의
-  const STAGE_ENEMIES = {
-    1: [
-      { type: 'chase', color: '#FF6B6B', speed: 1, hp: 1, size: 1.5, spawnRate: 0.8 },
-      { type: 'yellow_shooter', color: '#FFD93D', speed: 0.8, hp: 2, size: 1.5, spawnRate: 0.6 }
-    ],
-    2: [
-      { type: 'chase', color: '#FF6B6B', speed: 1.2, hp: 1, size: 1.5, spawnRate: 0.8 },
-      { type: 'kamikaze', color: '#FF8E53', speed: 1.5, hp: 1, size: 1.5, spawnRate: 0.7 },
-      { type: 'shooter_indestructible', color: '#6C5CE7', speed: 0.8, hp: 3, size: 1.5, spawnRate: 0.5 }
-    ],
-    3: [
-      { type: 'chase', color: '#FF6B6B', speed: 1.4, hp: 2, size: 1.5, spawnRate: 0.8 },
-      { type: 'kamikaze', color: '#FF8E53', speed: 1.8, hp: 1, size: 1.5, spawnRate: 0.7 },
-      { type: 'shooter_destructible', color: '#A8E6CF', speed: 0.8, hp: 2, size: 1.5, spawnRate: 0.5 }
-    ]
-  };
-
-  // 적 총알 스폰(부술 수 있는/없는 타입 포함)
-  game.spawnEnemyBullet = function(enemy, bulletType){
-    const gameScale = game.gameScale || 1;
-    const bulletSize = 4 * gameScale * 5; // 적 총알 크기 5배 확대
-    const bulletSpeed = 3 * gameScale;
-    const player = game.player;
-    const dx = player.x + player.width/2 - (enemy.x + enemy.width/2);
-    const dy = player.y + player.height/2 - (enemy.y + enemy.height/2);
-    const distance = Math.sqrt(dx*dx + dy*dy) || 1;
-    const vx = (dx / distance) * bulletSpeed;
-    const vy = (dy / distance) * bulletSpeed;
-    const bullet = game.createBullet(
-      enemy.x + enemy.width/2 - bulletSize/2,
-      enemy.y + enemy.height/2 - bulletSize/2,
-      bulletSize, bulletSize, vx, vy, bulletType, enemy.color
-    );
-    bullet.lastUpdate = Date.now(); // 총알에 필수 속성 추가
-    if (game.enemyBullets && Array.isArray(game.enemyBullets)) {
-      game.enemyBullets.push(bullet); // main.js의 enemyBullets 배열에 직접 추가
+  // 적 템플릿 정의 (모양과 기본 속성)
+  const ENEMY_TEMPLATES = {
+    kamikaze: {
+      color: '#ff3300', size: 0.9, hp: 1, goldValue: 8, speed: 1.5
+    },
+    shooter_indestructible: {
+      color: '#cc0066', size: 1.1, hp: 2, goldValue: 15, speed: 1.2, shotInterval: 2000, stopDistance: 150
+    },
+    shooter_destructible: {
+      color: '#9933ff', size: 1.0, hp: 1, goldValue: 12, speed: 1.3, shotInterval: 100, stopDistance: 180, maxStopTime: 3000
+    },
+    chase: {
+      color: '#ff00ff', size: 0.8, hp: 1, goldValue: 8, speed: 2.0
+    },
+    strong: {
+      color: '#ff0000', size: 1.2, hp: 2, goldValue: 12, speed: 0.8
+    },
+    yellow_shooter: {
+      color: '#FFD93D', size: 1.0, hp: 2, goldValue: 10, speed: 1.2, shotInterval: 5000, stopDistance: 200
     }
-    game.playSound && game.playSound(300, 0.1);
-  };
-
-  // 노란색 적 스폰 함수
-  game.spawnYellowShooterEnemy = function(x, y) {
-    const gameScale = game.gameScale || 1;
-    const enemySize = 20 * gameScale * 1.5; // 적 크기 1.5배
-    return {
-      x: x,
-      y: y,
-      width: enemySize,
-      height: enemySize,
-      color: '#FFD93D', // 노란색
-      type: 'yellow_shooter',
-      speed: 0.8 * gameScale,
-      hp: 2,
-      hasStopped: false,
-      stopDistance: 200 * gameScale,
-      shotInterval: 5000, // 5초
-      lastShot: 0
-    };
   };
 
   game.spawnBoss = function() {
@@ -124,6 +85,39 @@
     game.enemies.push(boss);
     game.gameState.currentBoss = boss;
     game.playSound && game.playSound(150, 0.4);
+  };
+
+  // 템플릿 기반 적 생성 함수
+  game.createEnemyFromTemplate = function(templateName, x, y, baseSize, baseSpeed, destination, gameState, gameScale) {
+    const template = ENEMY_TEMPLATES[templateName];
+    if (!template) {
+      console.error('Unknown enemy template:', templateName);
+      return null;
+    }
+
+    // AI 함수명 생성 (언더스코어 처리)
+    let aiFunctionName = 'update';
+    const parts = templateName.split('_');
+    parts.forEach(part => {
+      aiFunctionName += part.charAt(0).toUpperCase() + part.slice(1);
+    });
+    aiFunctionName += 'Enemy';
+
+    const enemy = {
+      x: x, y: y, width: baseSize * template.size, height: baseSize * template.size,
+      color: template.color, type: templateName, hp: template.hp, maxHp: template.hp,
+      goldValue: template.goldValue + gameState.stage,
+      speed: (Math.random() * 0.5 + template.speed) * baseSpeed * destination.difficulty * 0.5,
+      ai: game[aiFunctionName] || game.updateChaseEnemy  // 여기가 수정된 부분
+    };
+
+    // 특별한 속성들 추가
+    if (template.shotInterval) { enemy.shotInterval = template.shotInterval; enemy.lastShot = 0; }
+    if (template.stopDistance) { enemy.stopDistance = template.stopDistance * gameScale; enemy.hasStopped = false; }
+    if (template.maxStopTime) { enemy.maxStopTime = template.maxStopTime; enemy.stopTime = 0; enemy.exitSpeed = 2 * baseSpeed; }
+
+    enemy.lastUpdate = Date.now();
+    return enemy;
   };
 
 })();

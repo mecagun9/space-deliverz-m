@@ -72,7 +72,45 @@ const STAGE_2_DATA = {
     }
 };
 
+// 새로운 모듈화된 구조: 스테이지 2에서 출현하는 적 정의
+const STAGE_2_ENEMIES = [
+    { template: 'kamikaze', spawnRate: 0.15 },
+    { template: 'shooter_indestructible', spawnRate: 0.25 },
+    { template: 'shooter_destructible', spawnRate: 0.25 },
+    { template: 'chase', spawnRate: 0.15 },
+    { template: 'strong', spawnRate: 0.2 }
+];
+
+// 스테이지 2용 적 생성 함수
+function createStage2Enemy(x, y, baseSize, baseSpeed, destination, gameState, gameScale) {
+    // 스폰 확률에 따라 적 타입 선택
+    const random = Math.random();
+    let cumulativeRate = 0;
+    let selectedEnemy = null;
+    
+    for (const enemy of STAGE_2_ENEMIES) {
+        cumulativeRate += enemy.spawnRate;
+        if (random <= cumulativeRate) {
+            selectedEnemy = enemy;
+            break;
+        }
+    }
+    
+    // 기본값으로 chase 적 선택
+    if (!selectedEnemy) {
+        selectedEnemy = { template: 'chase', spawnRate: 0.15 };
+    }
+    
+    // js/enemies.js의 createEnemyFromTemplate 함수 사용
+    return window.createEnemyFromTemplate(
+        selectedEnemy.template,
+        x, y, baseSize, baseSpeed, destination, gameState, gameScale
+    );
+}
+
 // 전역으로 노출
 if (typeof window !== 'undefined') {
     window.STAGE_2_DATA = STAGE_2_DATA;
+    window.STAGE_2_ENEMIES = STAGE_2_ENEMIES;
+    window.createStage2Enemy = createStage2Enemy;
 }
