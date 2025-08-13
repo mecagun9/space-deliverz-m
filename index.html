@@ -233,6 +233,14 @@
             </div>
         </div>
 
+        <!-- 짐을 내리는 인터미션 화면 -->
+        <div id="unloadIntermissionScreen" style="display:none;">
+            <canvas id="unloadIntermissionCanvas" width="768" height="260"></canvas>
+            <div id="unloadIntermissionInfo" style="margin-top:10px; font-size: 14px; color: #0f0;">
+                화물 하역 중...
+            </div>
+        </div>
+
         <!-- 다이아 상점 화면 -->
         <div id="diamondShopScreen" style="display:none;">
             <canvas id="diamondShopCanvas" width="768" height="1024"></canvas>
@@ -274,11 +282,18 @@
                 <button class="upgrade-btn" onclick="addTurret()">
                     🎯 포탑 추가<br><span id="turretCost">100골드</span>
                 </button>
-                <button class="upgrade-btn" onclick="upgradeDamage()">
+                <button class="btn" onclick="upgradeDamage()">
                     ⚔️ 공격력<br><span id="damageCost">50골드</span>
                 </button>
-                <button class="upgrade-btn" onclick="upgradeSpeed()">
+                <button class="btn" onclick="upgradeSpeed()">
                     ⚡ 속도<br><span id="speedCost">75골드</span>
+                </button>
+            </div>
+            
+            <!-- 테스트용 버튼 추가 -->
+            <div id="testPanel" style="margin-top: 10px; text-align: center;">
+                <button class="btn" onclick="setTimeTo1Second()" style="background: #ff6600; color: white; font-size: 12px; padding: 8px 12px;">
+                    ⚡ 테스트: 시간 1초로 설정
                 </button>
             </div>
             
