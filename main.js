@@ -1078,11 +1078,11 @@
         let writeIndex = 0;
         for (let i = 0; i < enemies.length; i++) {
             const enemy = enemies[i];
-            // 보스 적 특별 처리
+            // 보스 적 특별 처리 - enemies.js의 함수 사용
             if (enemy.type === 'cruiser_boss') {
-                updateCruiserBoss(enemy);
+                window.updateCruiserBoss(enemy);
             } else if (enemy.type === 'carrier_boss') {
-                updateCarrierBoss(enemy);
+                window.updateCarrierBoss(enemy);
             } else {
                 // 편대 경로 업데이트(있을 경우)
                 if (enemy.type === 'formation' && window.tickFormationMovement) {
@@ -1116,90 +1116,8 @@
 
     
 
-    // ===== 보스 적 업데이트 함수들 =====
-    function updateCruiserBoss(boss) {
-        const now = Date.now();
-        
-        // 좌우 이동 패턴
-        if (boss.movePattern === 'horizontal') {
-            const centerX = canvas.width / 2;
-            const targetX = centerX + Math.sin(now * 0.001) * boss.moveRange;
-            boss.x = targetX - boss.width / 2;
-        }
-        
-        // 플레이어를 향해 천천히 하강
-        if (boss.y < 100 * gameScale) {
-            boss.y += boss.speed;
-        }
-        
-        // 주기적으로 총알 발사
-        if (now - boss.lastShot > boss.shotInterval) {
-            spawnBossBullet(boss, 'cruiser');
-            boss.lastShot = now;
-        }
-    }
-
-    function updateCarrierBoss(boss) {
-        const now = Date.now();
-        
-        // 고정 위치에서 천천히 하강
-        if (boss.y < 120 * gameScale) {
-            boss.y += boss.speed;
-        }
-        
-        // 주기적으로 전투기 생성
-        if (now - boss.lastShot > boss.shotInterval && boss.fighterSpawnCount < boss.maxFighters) {
-            spawnFighterFromCarrier(boss);
-            boss.lastShot = now;
-            boss.fighterSpawnCount++;
-        }
-    }
-
-    // 보스 총알 생성
-    function spawnBossBullet(boss, bossType) {
-        if (bossType === 'cruiser') {
-            const bulletSpeed = 3 * gameScale;
-            const dx = player.x + player.width/2 - (boss.x + boss.width/2);
-            const dy = player.y + player.height/2 - (boss.y + boss.height/2);
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance > 0) {
-                // 공용 총알 함수 사용
-                const bullet = window.createBullet(
-                    boss.x + boss.width/2,
-                    boss.y + boss.height,
-                    6 * gameScale,
-                    6 * gameScale,
-                    (dx / distance) * bulletSpeed,
-                    (dy / distance) * bulletSpeed,
-                    'enemy', // 기본 적 총알 타입
-                    '#ff0000', // 빨간색
-                    2
-                );
-                enemyBullets.push(bullet);
-            }
-        }
-    }
-
-    // 항공모함에서 전투기 생성
-    function spawnFighterFromCarrier(carrier) {
-        const fighter = {
-            x: carrier.x + Math.random() * carrier.width,
-            y: carrier.y + carrier.height,
-            width: 20 * gameScale,
-            height: 20 * gameScale,
-            speed: (Math.random() * 1 + 2) * gameScale,
-            color: '#FF4500', // 주황색
-            type: 'carrier_fighter',
-            hp: 3,
-            maxHp: 3,
-            goldValue: 15 + gameState.stage * 3
-        };
-        
-        enemies.push(fighter);
-        playSound(500, 0.1);
-    }
-
+    
+    
     function checkBulletCollisions() {
         // 플레이어 총알과 적의 충돌
         bullets.forEach((bullet, bulletIndex) => {
@@ -1901,6 +1819,7 @@
             window.updateAllBullets();
         }
         updateEnemies();
+        updateBullets(); // ← 이 줄을 추가!
         updateTurrets();
         updateExplosions();
         updateTimer();

@@ -120,6 +120,104 @@
     return enemy;
   };
 
+  // ===== 보스 업데이트 함수들 =====
+  
+  // 중순양함 보스 업데이트
+  game.updateCruiserBoss = function(boss) {
+    const now = Date.now();
+    
+    // 좌우 이동 패턴
+    if (boss.movePattern === 'horizontal') {
+      const centerX = game.canvas ? game.canvas.width / 2 : 384;
+      const targetX = centerX + Math.sin(now * 0.001) * boss.moveRange;
+      boss.x = targetX - boss.width / 2;
+    }
+    
+    // 플레이어를 향해 천천히 하강
+    if (boss.y < 100 * (game.gameScale || 1)) {
+      boss.y += boss.speed;
+    }
+    
+    // 주기적으로 총알 발사
+    if (now - boss.lastShot > boss.shotInterval) {
+      game.spawnBossBullet && game.spawnBossBullet(boss, 'cruiser');
+      boss.lastShot = now;
+    }
+  };
+
+  // 항공모함 보스 업데이트
+  game.updateCarrierBoss = function(boss) {
+    const now = Date.now();
+    
+    // 고정 위치에서 천천히 하강
+    if (boss.y < 120 * (game.gameScale || 1)) {
+      boss.y += boss.speed;
+    }
+    
+    // 주기적으로 전투기 생성
+    if (now - boss.lastShot > boss.shotInterval && boss.fighterSpawnCount < boss.maxFighters) {
+      game.spawnFighterFromCarrier && game.spawnFighterFromCarrier(boss);
+      boss.lastShot = now;
+      boss.fighterSpawnCount++;
+    }
+  };
+
+  // 보스 총알 생성
+  game.spawnBossBullet = function(boss, bossType) {
+    if (bossType === 'cruiser') {
+      const gameScale = game.gameScale || 1;
+      const player = game.player;
+      if (!player) return;
+      
+      const bulletSpeed = 3 * gameScale;
+      const dx = player.x + player.width/2 - (boss.x + boss.width/2);
+      const dy = player.y + player.height/2 - (boss.y + boss.height/2);
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance > 0) {
+        // 공용 총알 함수 사용
+        const bullet = game.createBullet(
+          boss.x + boss.width/2,
+          boss.y + boss.height,
+          6 * gameScale,
+          6 * gameScale,
+          (dx / distance) * bulletSpeed,
+          (dy / distance) * bulletSpeed,
+          'enemy', // 기본 적 총알 타입
+          '#ff0000', // 빨간색
+          2
+        );
+        if (bullet && game.enemyBullets) {
+          game.enemyBullets.push(bullet);
+        }
+      }
+    }
+  };
+
+  // 항공모함에서 전투기 생성
+  game.spawnFighterFromCarrier = function(carrier) {
+    const gameScale = game.gameScale || 1;
+    const fighter = {
+      x: carrier.x + Math.random() * carrier.width,
+      y: carrier.y + carrier.height,
+      width: 20 * gameScale,
+      height: 20 * gameScale,
+      speed: (Math.random() * 1 + 2) * gameScale,
+      color: '#FF4500', // 주황색
+      type: 'carrier_fighter',
+      hp: 3,
+      maxHp: 3,
+      goldValue: 15 + (game.gameState ? game.gameState.stage : 1) * 3
+    };
+    
+    if (game.enemies) {
+      game.enemies.push(fighter);
+    }
+    if (game.playSound) {
+      game.playSound(500, 0.1);
+    }
+  };
+
 })();
 
 
