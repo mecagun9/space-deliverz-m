@@ -528,6 +528,13 @@
         
         function drawBackground() {
             ictx.clearRect(0, 0, interCanvas.width, interCanvas.height);
+            // 검은 배경 명시적 설정 (하역 인터미션과 동일)
+            ictx.fillStyle = '#000000';
+            ictx.fillRect(0, 0, interCanvas.width, interCanvas.height);
+            // 검은 배경에 테두리 추가 (하역 인터미션과 동일한 스타일)
+            ictx.strokeStyle = '#333333';
+            ictx.lineWidth = 2 * interScale;
+            ictx.strokeRect(0, 0, interCanvas.width, interCanvas.height);
             // 바닥 라인
             ictx.fillStyle = '#331100';
             ictx.fillRect(0, ship.y + ship.h, interCanvas.width, 4 * interScale);
@@ -927,6 +934,11 @@
     }
 
     function showStageClear() {
+        // 짐을 내리는 인터미션 먼저 표시
+        showUnloadIntermission();
+        return; // 여기서 함수 종료
+        
+        // 기존 코드는 showUnloadIntermission에서 호출됨
         const destination = DESTINATIONS[gameState.selectedDestination];
         let goldReward = Math.floor(gameState.score * 0.1 * destination.goldMultiplier);
         let diamondReward = 0;
@@ -986,6 +998,8 @@
         document.getElementById('gameScreen').style.display = 'none';
         const intermission = document.getElementById('intermissionScreen');
         if (intermission) intermission.style.display = 'none';
+        const unloadIntermission = document.getElementById('unloadIntermissionScreen');
+        if (unloadIntermission) unloadIntermission.style.display = 'none';
         document.getElementById('gameOverModal').style.display = 'none';
         document.getElementById('stageClearModal').style.display = 'none';
     }
@@ -1029,14 +1043,29 @@
             for (let i = 0; i < enemyBullets.length; i++) {
                 const bullet = enemyBullets[i];
                 if (checkCollision(bullet, player)) {
+                    // 부술 수 없는 총알인 경우 특별 처리
+                    if (bullet.type === 'indestructible') {
+                                            // 부술 수 없는 총알은 플레이어에게 닿으면 소멸하면서 1의 데미지
                     createExplosion(bullet.x, bullet.y);
-                    playSound(200, 0.1);
+                    playSound(150, 0.15); // 부술 수 없는 총알은 더 낮은 음과 큰 볼륨
                     gameState.lives--;
-                    if (gameState.lives <= 0) {
-                        gameState.gameOver = true;
-                        showGameOver();
+                        if (gameState.lives <= 0) {
+                            gameState.gameOver = true;
+                            showGameOver();
+                        }
+                        // 부술 수 없는 총알은 충돌 후 즉시 소멸
+                        continue;
+                    } else {
+                        // 부술 수 있는 총알은 기존과 동일하게 처리
+                        createExplosion(bullet.x, bullet.y);
+                        playSound(200, 0.1);
+                        gameState.lives--;
+                        if (gameState.lives <= 0) {
+                            gameState.gameOver = true;
+                            showGameOver();
+                        }
+                        continue; // 충돌한 것은 남기지 않음
                     }
-                    continue; // 충돌한 것은 남기지 않음
                 }
                 enemyBullets[writeIndex++] = bullet;
             }
@@ -1049,11 +1078,11 @@
         let writeIndex = 0;
         for (let i = 0; i < enemies.length; i++) {
             const enemy = enemies[i];
-            // 보스 적 특별 처리
+            // 보스 적 특별 처리 - enemies.js의 함수 사용
             if (enemy.type === 'cruiser_boss') {
-                updateCruiserBoss(enemy);
+                window.updateCruiserBoss(enemy);
             } else if (enemy.type === 'carrier_boss') {
-                updateCarrierBoss(enemy);
+                window.updateCarrierBoss(enemy);
             } else {
                 // 편대 경로 업데이트(있을 경우)
                 if (enemy.type === 'formation' && window.tickFormationMovement) {
@@ -1087,90 +1116,8 @@
 
     
 
-    // ===== 보스 적 업데이트 함수들 =====
-    function updateCruiserBoss(boss) {
-        const now = Date.now();
-        
-        // 좌우 이동 패턴
-        if (boss.movePattern === 'horizontal') {
-            const centerX = canvas.width / 2;
-            const targetX = centerX + Math.sin(now * 0.001) * boss.moveRange;
-            boss.x = targetX - boss.width / 2;
-        }
-        
-        // 플레이어를 향해 천천히 하강
-        if (boss.y < 100 * gameScale) {
-            boss.y += boss.speed;
-        }
-        
-        // 주기적으로 총알 발사
-        if (now - boss.lastShot > boss.shotInterval) {
-            spawnBossBullet(boss, 'cruiser');
-            boss.lastShot = now;
-        }
-    }
-
-    function updateCarrierBoss(boss) {
-        const now = Date.now();
-        
-        // 고정 위치에서 천천히 하강
-        if (boss.y < 120 * gameScale) {
-            boss.y += boss.speed;
-        }
-        
-        // 주기적으로 전투기 생성
-        if (now - boss.lastShot > boss.shotInterval && boss.fighterSpawnCount < boss.maxFighters) {
-            spawnFighterFromCarrier(boss);
-            boss.lastShot = now;
-            boss.fighterSpawnCount++;
-        }
-    }
-
-    // 보스 총알 생성
-    function spawnBossBullet(boss, bossType) {
-        if (bossType === 'cruiser') {
-            const bulletSpeed = 3 * gameScale;
-            const dx = player.x + player.width/2 - (boss.x + boss.width/2);
-            const dy = player.y + player.height/2 - (boss.y + boss.height/2);
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance > 0) {
-                // 공용 총알 함수 사용
-                const bullet = window.createBullet(
-                    boss.x + boss.width/2,
-                    boss.y + boss.height,
-                    6 * gameScale,
-                    6 * gameScale,
-                    (dx / distance) * bulletSpeed,
-                    (dy / distance) * bulletSpeed,
-                    'enemy', // 기본 적 총알 타입
-                    '#ff0000', // 빨간색
-                    2
-                );
-                enemyBullets.push(bullet);
-            }
-        }
-    }
-
-    // 항공모함에서 전투기 생성
-    function spawnFighterFromCarrier(carrier) {
-        const fighter = {
-            x: carrier.x + Math.random() * carrier.width,
-            y: carrier.y + carrier.height,
-            width: 20 * gameScale,
-            height: 20 * gameScale,
-            speed: (Math.random() * 1 + 2) * gameScale,
-            color: '#FF4500', // 주황색
-            type: 'carrier_fighter',
-            hp: 3,
-            maxHp: 3,
-            goldValue: 15 + gameState.stage * 3
-        };
-        
-        enemies.push(fighter);
-        playSound(500, 0.1);
-    }
-
+    
+    
     function checkBulletCollisions() {
         // 플레이어 총알과 적의 충돌
         bullets.forEach((bullet, bulletIndex) => {
@@ -1267,7 +1214,7 @@
                     }
                 });
                 
-                if (closestEnemy && closestDistance < 300 * gameScale) {
+                if (closestEnemy && closestDistance < 150 * gameScale) { // 300에서 150으로 변경
                     const dx = closestEnemy.x + closestEnemy.width/2 - (player.x + turret.x + player.width/2);
                     const dy = closestEnemy.y + closestEnemy.height/2 - (player.y + turret.y + player.height/2);
                     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -1288,6 +1235,11 @@
                         '#00ff00',
                         turret.damage
                     );
+                    
+                    // 총알의 시작 위치 저장 (사정거리 체크용)
+                    bullet.startX = player.x + turret.x + player.width/2;
+                    bullet.startY = player.y + turret.y + player.height/2;
+                    
                     turretBullets.push(bullet);
                     
                     turret.lastShot = now;
@@ -1355,7 +1307,7 @@
                         6*gameScale, 6*gameScale);
         });
 
-        // 터렛 사정거리 경계선을 원으로 표시
+        // 터렛 사정거리 경계선을 원으로 표시 (절반으로 줄임)
         ctx.strokeStyle = 'rgba(0, 255, 0, 0.3)';
         ctx.lineWidth = 2 * gameScale;
         ctx.setLineDash([5 * gameScale, 5 * gameScale]);
@@ -1363,7 +1315,7 @@
             ctx.beginPath();
             ctx.arc(player.x + turret.x + player.width/2, 
                    player.y + turret.y + player.height/2, 
-                   300 * gameScale, 0, Math.PI * 2);
+                   150 * gameScale, 0, Math.PI * 2); // 300에서 150으로 변경
             ctx.stroke();
         });
         ctx.setLineDash([]); // 점선 해제
@@ -1524,7 +1476,7 @@
         let infoY = 25;
         ctx.fillText(`🟠 주황색: 자폭형 적 (플레이어를 향해 직진)`, canvas.width - 10, infoY);
         infoY += 20;
-        ctx.fillText(`🔴 진한 분홍색: 부술 수 없는 총알 (2초마다 발사)`, canvas.width - 10, infoY);
+        ctx.fillText(`🔴 진한 분홍색: 부술 수 없는 총알 (2초마다 발사, 닿으면 1데미지)`, canvas.width - 10, infoY);
         infoY += 20;
         ctx.fillText(`🟣 보라색: 부술 수 있는 총알 (1초마다 발사, 3초 후 퇴장)`, canvas.width - 10, infoY);
         infoY += 20;
@@ -1867,6 +1819,7 @@
             window.updateAllBullets();
         }
         updateEnemies();
+        updateBullets(); // ← 이 줄을 추가!
         updateTurrets();
         updateExplosions();
         updateTimer();
@@ -1920,3 +1873,184 @@
     window.addTurret = addTurret;
     window.returnToPrep = returnToPrep;
     window.toggleDiamondUpgrades = toggleDiamondUpgrades;
+    window.setTimeTo1Second = setTimeTo1Second; // 테스트 함수 추가
+
+    // ===== 인터미션: 화물 하역 애니메이션 (상차 인터미션 완전 복제) =====
+    function showUnloadIntermission() {
+        const game = document.getElementById('gameScreen');
+        const unloadInter = document.getElementById('unloadIntermissionScreen');
+        const unloadCanvas = document.getElementById('unloadIntermissionCanvas');
+        const ictx = unloadCanvas.getContext('2d');
+        
+        // 상차 인터미션과 동일한 리사이즈 함수 사용
+        resizeIntermissionCanvas();
+        const interScale = unloadCanvas.width / 768;
+        
+        game.style.display = 'none';
+        unloadInter.style.display = 'flex';
+        
+        const totalBoxes = gameState.selectedCargos.length;
+        const ship = { 
+            x: 40 * interScale, 
+            y: unloadCanvas.height - 80 * interScale, 
+            w: 120 * interScale, 
+            h: 40 * interScale 
+        };
+        const bay = { 
+            x: ship.x + ship.w - 20 * interScale, 
+            y: ship.y - 10 * interScale, 
+            w: 30 * interScale, 
+            h: 30 * interScale 
+        };
+        
+        let unloaded = 0;
+        let lastTime = 0;
+        let animId = 0;
+        
+        function drawBackground() {
+            ictx.clearRect(0, 0, unloadCanvas.width, unloadCanvas.height);
+            // 상차 인터미션과 동일한 그라데이션 배경
+            const gradient = ictx.createRadialGradient(
+                unloadCanvas.width / 2, unloadCanvas.height / 2, 0,
+                unloadCanvas.width / 2, unloadCanvas.height / 2, Math.max(unloadCanvas.width, unloadCanvas.height) / 2
+            );
+            gradient.addColorStop(0, '#001122');
+            gradient.addColorStop(1, '#000000');
+            ictx.fillStyle = gradient;
+            ictx.fillRect(0, 0, unloadCanvas.width, unloadCanvas.height);
+            // 바닥 라인
+            ictx.fillStyle = '#331100';
+            ictx.fillRect(0, ship.y + ship.h, unloadCanvas.width, 4 * interScale);
+            // 우주선
+            ictx.fillStyle = '#00cccc';
+            ictx.fillRect(ship.x, ship.y, ship.w, ship.h);
+            // 적재함 표시
+            ictx.fillStyle = '#003333';
+            ictx.fillRect(bay.x, bay.y, bay.w, bay.h);
+            // 텍스트
+            ictx.fillStyle = '#ffaa00';
+            ictx.font = `${Math.round(16 * interScale)}px Arial`;
+            ictx.fillText(`하역 ${unloaded}/${totalBoxes}`, 20 * interScale, 30 * interScale);
+        }
+        
+        function drawBox(x, y, color) {
+            ictx.fillStyle = color;
+            ictx.fillRect(x, y, 24 * interScale, 24 * interScale);
+            ictx.strokeStyle = '#000';
+            ictx.strokeRect(x, y, 24 * interScale, 24 * interScale);
+        }
+        
+        function animateBoxUnload(index) {
+            // 시작점: 적재함 안 (상차와 동일한 위치)
+            const startX = bay.x + 4 * interScale + (index % 2) * 10 * interScale;
+            const startY = bay.y + 4 * interScale + Math.floor(index / 2) * 10 * interScale;
+            // 끝점: 바닥 (상차와 반대)
+            const endX = unloadCanvas.width - 80 * interScale;
+            const endY = ship.y - 10 * interScale;
+            const color = ['#ffaa00','#aaff00','#00ffaa','#00aaff','#aa00ff','#ff00aa','#ff6600','#66ff00'][index % 8];
+            const duration = 600;
+            let t0;
+            
+            function step(ts) {
+                if (!t0) t0 = ts;
+                const p = Math.min(1, (ts - t0) / duration);
+                const x = startX + (endX - startX) * p;
+                const y = startY + (endY - startY) * p;
+                drawBackground();
+                // 아직 하역되지 않은 박스들 그리기
+                for (let i = unloaded; i < totalBoxes; i++) {
+                    const ix = bay.x + 4 * interScale + (i % 2) * 10 * interScale;
+                    const iy = bay.y + 4 * interScale + Math.floor(i / 2) * 10 * interScale;
+                    drawBox(ix, iy, ['#ffaa00','#aaff00','#00ffaa','#00aaff','#aa00ff','#ff00aa','#ff6600','#66ff00'][i % 8]);
+                }
+                // 이동 중 박스
+                drawBox(x, y, color);
+                if (p < 1) {
+                    animId = requestAnimationFrame(step);
+                } else {
+                    unloaded++;
+                    playSound(400, 0.08);
+                    if (unloaded < totalBoxes) {
+                        animateBoxUnload(unloaded);
+                    } else {
+                        setTimeout(() => {
+                            unloadInter.style.display = 'none';
+                            returnToPrep();
+                        }, 300);
+                    }
+                }
+            }
+            animId = requestAnimationFrame(step);
+        }
+        
+        drawBackground();
+        if (totalBoxes > 0) {
+            animateBoxUnload(0);
+        } else {
+            setTimeout(() => {
+                unloadInter.style.display = 'none';
+                returnToPrep();
+            }, 300);
+        }
+
+        // 상차 인터미션과 동일한 리사이즈 처리
+        const unloadIntermissionResizeHandler = () => {
+            if (unloadInter.style.display === 'flex') {
+                resizeIntermissionCanvas();
+                drawBackground();
+            }
+        };
+        window.addEventListener('resize', unloadIntermissionResizeHandler, { passive: true });
+
+        const cleanup = () => window.removeEventListener('resize', unloadIntermissionResizeHandler);
+        const originalReturnToPrep = returnToPrep;
+        window.returnToPrep = function() {
+            cleanup();
+            originalReturnToPrep();
+            window.returnToPrep = originalReturnToPrep;
+        };
+    }
+
+    // 짐을 내리는 인터미션 캔버스 리사이즈 함수
+    function resizeUnloadIntermissionCanvas() {
+        const unloadCanvas = document.getElementById('unloadIntermissionCanvas');
+        if (!unloadCanvas) return;
+        const windowWidth = (window.visualViewport && window.visualViewport.width) || window.innerWidth;
+        const windowHeight = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+
+        const targetWidth = 768;
+        const targetHeight = 260;
+
+        let scale;
+        let width;
+        let height;
+
+        if (isMobile || windowWidth <= 900) {
+            const horizontalPadding = 8;   // 모바일에서는 여백 최소화
+            const verticalReserve = 80;    // 상/하단 여백 줄여서 더 크게 표시
+            const scaleX = (windowWidth - horizontalPadding) / targetWidth;
+            const scaleY = (windowHeight - verticalReserve) / targetHeight;
+            // 모바일에서는 가로 기준으로 크게 보이게, 세로는 넘치지 않게 제한
+            scale = Math.max(0.5, Math.min(scaleX, scaleY));
+        } else {
+            scale = Math.min(1, (windowHeight - 280) / targetHeight);
+        }
+
+        width = Math.floor(targetWidth * scale);
+        height = Math.floor(targetHeight * scale);
+
+        unloadCanvas.width = width;
+        unloadCanvas.height = height;
+        // CSS 사이즈도 명시하여 레이아웃 일치
+        unloadCanvas.style.width = width + 'px';
+        unloadCanvas.style.height = height + 'px';
+    }
+
+    // ===== 테스트용 함수들 =====
+    function setTimeTo1Second() {
+        if (gameState.inGame && !gameState.gameOver && !gameState.stageComplete) {
+            gameState.stageTimer = 1;
+            updateUI(); // UI 즉시 업데이트
+            console.log('테스트: 남은시간을 1초로 설정했습니다.');
+        }
+    }
